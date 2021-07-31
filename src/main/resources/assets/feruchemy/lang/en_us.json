@@ -1,0 +1,12 @@
+{
+  "item.feruchemy.metal_mind": "Metalmind",
+  "item.feruchemy.the_band_of_ritual_mourning": "The Band of Ritual Mourning",
+
+  "effect.feruchemy.fire_aspect": "Fire Aspect",
+  "effect.feruchemy.knock_back": "Knockback",
+  "effect.feruchemy.bed_use": "Daydream",
+  "effect.feruchemy.non_generation": "Damaged",
+
+  "key.feruchemy": "Feruchemy",
+  "key.feruchemy.storing_menu": "Feruchemy Menu"
+}

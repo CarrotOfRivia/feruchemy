@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "feruchemy:item/the_band_of_ritual_mourning"
+  }
+}
