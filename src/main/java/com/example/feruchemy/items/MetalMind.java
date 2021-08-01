@@ -5,10 +5,9 @@ import com.example.feruchemy.config.Config;
 import com.example.feruchemy.utils.FeruchemyUtils;
 import com.example.feruchemy.utils.InstanceFactory;
 import com.example.feruchemy.utils.MetalChart;
-import com.legobmw99.allomancy.modules.powers.util.AllomancyCapability;
-import com.legobmw99.allomancy.setup.Metal;
+import com.legobmw99.allomancy.api.enums.Metal;
+import com.legobmw99.allomancy.modules.powers.data.AllomancerCapability;
 import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -21,7 +20,6 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -271,7 +269,7 @@ public class MetalMind extends Item {
         if(nbt!=null){
             Set<String> keySet = nbt.keySet();
             if(keySet.contains("fid")){
-                tooltip.add(new StringTextComponent("FID: ").mergeStyle(TextFormatting.GRAY).append(new StringTextComponent(toDigit(nbt.getInt("fid"), 4)).mergeStyle(TextFormatting.RED)));
+                tooltip.add(new StringTextComponent("FID: ").mergeStyle(TextFormatting.GRAY).appendSibling(new StringTextComponent(toDigit(nbt.getInt("fid"), 4)).mergeStyle(TextFormatting.RED)));
             }
 
             for (Metal metal: Metal.values()){
@@ -285,11 +283,11 @@ public class MetalMind extends Item {
                         additional = "";
                     }
                     if(isInf()){
-                        tooltip.add(new StringTextComponent(metal+ ": ").append(new StringTextComponent(" INF")
-                                .append(new StringTextComponent(" "+status+additional)).append(new StringTextComponent(" FLAKES: INF")).mergeStyle(TextFormatting.GRAY)));
+                        tooltip.add(new StringTextComponent(metal+ ": ").appendSibling(new StringTextComponent(" INF")
+                                .appendSibling(new StringTextComponent(" "+status+additional)).appendSibling(new StringTextComponent(" FLAKES: INF")).mergeStyle(TextFormatting.GRAY)));
                     }else {
-                        tooltip.add(new StringTextComponent(metal+ ": ").append(new StringTextComponent(" "+ Math.max(0, getCharge(stack, metal)))
-                                .append(new StringTextComponent(" "+status+additional)).append(new StringTextComponent(" FLAKES: "+getFlakeCount(stack, metal))).mergeStyle(TextFormatting.GRAY)));
+                        tooltip.add(new StringTextComponent(metal+ ": ").appendSibling(new StringTextComponent(" "+ Math.max(0, getCharge(stack, metal)))
+                                .appendSibling(new StringTextComponent(" "+status+additional)).appendSibling(new StringTextComponent(" FLAKES: "+getFlakeCount(stack, metal))).mergeStyle(TextFormatting.GRAY)));
                     }
                 }
             }
@@ -358,57 +356,60 @@ public class MetalMind extends Item {
                     Status statusN = getStatus(stack, Metal.NICROSIL);
                     boolean canNicrosilStore = statusN == Status.STORING;
                     boolean canNicrosilTap = statusN == Status.TAPPING;
-                    AllomancyCapability cap = AllomancyCapability.forPlayer(entityIn);
-                    if(status == Status.STORING){
-                        int count = getCharge(stack, metal);
-                        if (count < Config.STORAGE.get(metal).get()*getFlakeCount(stack, metal) || canNicrosilStore){
+                    entityIn.getCapability(AllomancerCapability.PLAYER_CAP).ifPresent(
+                            (cap)->{
+                                if(status == Status.STORING){
+                                    int count = getCharge(stack, metal);
+                                    if (count < Config.STORAGE.get(metal).get()*getFlakeCount(stack, metal) || canNicrosilStore){
 
-                            int speed = MetalChart.getStoreSpeed(metal);
-                            if (cap.isBurning(metal)){
-                                speed = speed * 10;
-                            }
+                                        int speed = MetalChart.getStoreSpeed(metal);
+                                        if (cap.isBurning(metal)){
+                                            speed = speed * 10;
+                                        }
 
-                            if(canNicrosilStore && metal != Metal.NICROSIL){
-                                // try to store NICROSIL
-                                if((random.nextFloat()>0.5)){
-                                    if(cap.isBurning(Metal.NICROSIL)){
-                                        speed = speed * 10;
+                                        if(canNicrosilStore && metal != Metal.NICROSIL){
+                                            // try to store NICROSIL
+                                            if((random.nextFloat()>0.5)){
+                                                if(cap.isBurning(Metal.NICROSIL)){
+                                                    speed = speed * 10;
+                                                }
+                                                addCharge(stack, Metal.NICROSIL, speed);
+                                            }
+                                        }
+                                        else {
+                                            addCharge(stack, metal, speed);
+                                        }
                                     }
-                                    addCharge(stack, Metal.NICROSIL, speed);
+                                    else {
+                                        FeruchemyUtils.whenStoringEnd((PlayerEntity) entityIn, stack, metal);
+                                        setStatus(stack, Status.FULL, metal);
+                                    }
+                                }
+                                else if(status == Status.TAPPING && !cap.isBurning(metal)){
+                                    int count = getCharge(stack, metal);
+                                    if (count <= 0 && (!canNicrosilTap)){
+                                        FeruchemyUtils.whenTappingEnd((PlayerEntity) entityIn, stack, metal);
+                                        setCharge(stack, metal, 0);
+                                        setStatus(stack, Status.EMPTY, metal);
+                                    }
+                                    else if(!cap.isBurning(metal)){
+                                        if(canNicrosilTap && metal != Metal.NICROSIL){
+                                            addCharge(stack, Metal.NICROSIL, -MetalChart.TAPPING_SPEED.get(metal).get(getLevel(stack, metal)-1));
+                                        }
+                                        else {
+                                            addCharge(stack, metal, -MetalChart.TAPPING_SPEED.get(metal).get(getLevel(stack, metal)-1));
+                                        }
+                                    }
+                                }
+                                else {
+                                    int count = getCharge(stack, metal);
+                                    if (count <= 0){
+                                        setCharge(stack, metal, 0);
+                                        setStatus(stack, Status.EMPTY, metal);
+                                    }
                                 }
                             }
-                            else {
-                                addCharge(stack, metal, speed);
-                            }
-                        }
-                        else {
-                            FeruchemyUtils.whenStoringEnd((PlayerEntity) entityIn, stack, metal);
-                            setStatus(stack, Status.FULL, metal);
-                        }
-                    }
-                    else if(status == Status.TAPPING && !cap.isBurning(metal)){
-                        int count = getCharge(stack, metal);
-                        if (count <= 0 && (!canNicrosilTap)){
-                            FeruchemyUtils.whenTappingEnd((PlayerEntity) entityIn, stack, metal);
-                            setCharge(stack, metal, 0);
-                            setStatus(stack, Status.EMPTY, metal);
-                        }
-                        else if(!cap.isBurning(metal)){
-                            if(canNicrosilTap && metal != Metal.NICROSIL){
-                                addCharge(stack, Metal.NICROSIL, -MetalChart.TAPPING_SPEED.get(metal).get(getLevel(stack, metal)-1));
-                            }
-                            else {
-                                addCharge(stack, metal, -MetalChart.TAPPING_SPEED.get(metal).get(getLevel(stack, metal)-1));
-                            }
-                        }
-                    }
-                    else {
-                        int count = getCharge(stack, metal);
-                        if (count <= 0){
-                            setCharge(stack, metal, 0);
-                            setStatus(stack, Status.EMPTY, metal);
-                        }
-                    }
+                    );
                 }
 
                 // Apply effect when storing or tapping
@@ -416,42 +417,44 @@ public class MetalMind extends Item {
                     if (! validMetalStrings.contains(key)){
                         continue;
                     }
-                    Metal metal = Metal.valueOf(key);
-                    Status status = getStatus(stack, metal);
-                    HashSet<InstanceFactory> instanceFactories = null;
-                    if(status == Status.STORING){
-                        instanceFactories = MetalChart.STORING_EFFECT_MAP.get(metal);
-                    }
+                    entityIn.getCapability(AllomancerCapability.PLAYER_CAP).ifPresent(
+                            (cap)->{
+                                Metal metal = Metal.valueOf(key);
+                                Status status = getStatus(stack, metal);
+                                HashSet<InstanceFactory> instanceFactories = null;
+                                if(status == Status.STORING){
+                                    instanceFactories = MetalChart.STORING_EFFECT_MAP.get(metal);
+                                }
 
-                    else if(status == Status.TAPPING && FeruchemyUtils.canPlayerTap((PlayerEntity) entityIn, stack, metal)){
-                        List<HashSet<InstanceFactory>> tmp = MetalChart.TAPPING_MAP.get(metal);
-                        if(tmp != null){
-                            instanceFactories = tmp.get(getLevel(stack, metal)-1);
-                        }
-                        AllomancyCapability cap = AllomancyCapability.forPlayer(entityIn);
-                        if(cap.isBurning(metal) && MetalChart.FORTH_TAP_MAP.containsKey(metal)){
-                            instanceFactories = MetalChart.FORTH_TAP_MAP.get(metal);
-                        }
-                    }
+                                else if(status == Status.TAPPING && FeruchemyUtils.canPlayerTap((PlayerEntity) entityIn, stack, metal)){
+                                    List<HashSet<InstanceFactory>> tmp = MetalChart.TAPPING_MAP.get(metal);
+                                    if(tmp != null){
+                                        instanceFactories = tmp.get(getLevel(stack, metal)-1);
+                                    }
+                                    if(cap.isBurning(metal) && MetalChart.FORTH_TAP_MAP.containsKey(metal)){
+                                        instanceFactories = MetalChart.FORTH_TAP_MAP.get(metal);
+                                    }
+                                }
 
-                    if (instanceFactories != null){
-                        for (InstanceFactory instanceFactory: instanceFactories){
-                            if(instanceFactory != null){
-                                instanceFactory.getOtherEffects().accept((PlayerEntity) entityIn, stack);
-                                EffectInstance instance = instanceFactory.get();
-                                if(instance != null){
-                                    if((status==Status.STORING && (metal==Metal.STEEL || metal==Metal.PEWTER || metal==Metal.TIN))){
-                                        // avoid status conflict
-                                        AllomancyCapability capability = AllomancyCapability.forPlayer(entityIn);
-                                        if(capability.isBurning(metal)){
-                                            break;
+                                if (instanceFactories != null){
+                                    for (InstanceFactory instanceFactory: instanceFactories){
+                                        if(instanceFactory != null){
+                                            instanceFactory.getOtherEffects().accept((PlayerEntity) entityIn, stack);
+                                            EffectInstance instance = instanceFactory.get();
+                                            if(instance != null){
+                                                if((status==Status.STORING && (metal==Metal.STEEL || metal==Metal.PEWTER || metal==Metal.TIN))){
+                                                    // avoid status conflict
+                                                    if(cap.isBurning(metal)){
+                                                        break;
+                                                    }
+                                                }
+                                                ((PlayerEntity)entityIn).addPotionEffect(instanceFactory.get());
+                                            }
                                         }
                                     }
-                                    ((PlayerEntity)entityIn).addPotionEffect(instanceFactory.get());
                                 }
                             }
-                        }
-                    }
+                    );
                 }
             }
         }

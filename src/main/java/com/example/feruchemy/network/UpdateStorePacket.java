@@ -4,7 +4,7 @@ import com.example.feruchemy.caps.FeruchemyCapability;
 import com.example.feruchemy.config.Config;
 import com.example.feruchemy.items.MetalMind;
 import com.example.feruchemy.utils.FeruchemyUtils;
-import com.legobmw99.allomancy.setup.Metal;
+import com.legobmw99.allomancy.api.enums.Metal;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.INetHandler;

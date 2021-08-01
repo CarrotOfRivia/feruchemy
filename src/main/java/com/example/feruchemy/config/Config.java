@@ -1,7 +1,6 @@
 package com.example.feruchemy.config;
 
-import com.example.feruchemy.items.MetalMind;
-import com.legobmw99.allomancy.setup.Metal;
+import com.legobmw99.allomancy.api.enums.Metal;
 import net.minecraftforge.common.ForgeConfigSpec;
 
 import java.util.HashMap;

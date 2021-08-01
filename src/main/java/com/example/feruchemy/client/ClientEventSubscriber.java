@@ -1,14 +1,10 @@
 package com.example.feruchemy.client;
 
 import com.example.feruchemy.Feruchemy;
-import com.example.feruchemy.utils.FeruchemyUtils;
 import com.legobmw99.allomancy.modules.powers.PowersConfig;
-import com.legobmw99.allomancy.modules.powers.client.PowersClientSetup;
 import com.legobmw99.allomancy.modules.powers.client.gui.MetalSelectScreen;
-import com.legobmw99.allomancy.modules.powers.util.AllomancyCapability;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.ChatScreen;
-import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraftforge.api.distmarker.Dist;

@@ -9,21 +9,20 @@ import com.example.feruchemy.items.MetalMind;
 import com.example.feruchemy.network.PacketRegister;
 import com.example.feruchemy.network.UpdateStorePacket;
 import com.example.feruchemy.utils.FeruchemyUtils;
+import com.legobmw99.allomancy.api.data.IAllomancerData;
+import com.legobmw99.allomancy.api.enums.Metal;
 import com.legobmw99.allomancy.modules.powers.PowersConfig;
-import com.legobmw99.allomancy.modules.powers.util.AllomancyCapability;
-import com.legobmw99.allomancy.network.Network;
-import com.legobmw99.allomancy.setup.Metal;
+import com.legobmw99.allomancy.modules.powers.data.AllomancerCapability;
+import com.legobmw99.allomancy.modules.powers.data.DefaultAllomancerData;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
-import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
@@ -36,9 +35,7 @@ import java.util.Arrays;
 
 @OnlyIn(Dist.CLIENT)
 public class MetalStoreScreen extends Screen {
-    private static final String[] METAL_NAMES = (String[]) Arrays.stream(Metal.values()).map(Metal::getDisplayName).toArray((x$0) -> {
-        return new String[x$0];
-    });
+    private static final String[] METAL_NAMES = Arrays.stream(Metal.values()).map(Metal::getName).toArray(String[]::new);
     private static final String GUI_METAL = "allomancy:textures/gui/metals/%s_symbol.png";
     private static final ResourceLocation[] METAL_ICONS;
     int timeIn;
@@ -117,7 +114,7 @@ public class MetalStoreScreen extends Screen {
                     b = 0xED;
                 }
                 else if(status == MetalMind.Status.TAPPING){
-                    AllomancyCapability capability = AllomancyCapability.forPlayer(player);
+                    IAllomancerData capability = player.getCapability(AllomancerCapability.PLAYER_CAP).orElse(new DefaultAllomancerData());
                     int power = MetalMind.getLevel(itemStack, mt);
                     if(capability.isBurning(mt)){
                         r = 0xFF;

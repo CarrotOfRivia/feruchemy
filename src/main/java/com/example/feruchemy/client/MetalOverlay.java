@@ -1,12 +1,10 @@
 package com.example.feruchemy.client;
 
 import com.example.feruchemy.caps.FeruchemyCapability;
-import com.example.feruchemy.config.Config;
 import com.example.feruchemy.items.MetalMind;
 import com.example.feruchemy.utils.FeruchemyUtils;
+import com.legobmw99.allomancy.api.enums.Metal;
 import com.legobmw99.allomancy.modules.powers.PowersConfig;
-import com.legobmw99.allomancy.modules.powers.util.AllomancyCapability;
-import com.legobmw99.allomancy.setup.Metal;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;

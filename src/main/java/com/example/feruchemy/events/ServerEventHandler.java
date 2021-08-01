@@ -7,13 +7,13 @@ import com.example.feruchemy.config.Config;
 import com.example.feruchemy.effects.EffectRegister;
 import com.example.feruchemy.items.MetalMind;
 import com.example.feruchemy.network.NetworkUtil;
-import com.example.feruchemy.utils.FeruStatus;
 import com.example.feruchemy.utils.FeruchemyUtils;
+import com.legobmw99.allomancy.api.data.IAllomancerData;
+import com.legobmw99.allomancy.api.enums.Metal;
 import com.legobmw99.allomancy.modules.materials.MaterialsSetup;
-import com.legobmw99.allomancy.modules.powers.PowersConfig;
-import com.legobmw99.allomancy.modules.powers.util.AllomancyCapability;
+import com.legobmw99.allomancy.modules.powers.data.AllomancerCapability;
+import com.legobmw99.allomancy.modules.powers.data.DefaultAllomancerData;
 import com.legobmw99.allomancy.network.Network;
-import com.legobmw99.allomancy.setup.Metal;
 import net.minecraft.block.Block;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -25,18 +25,13 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.item.SwordItem;
-import net.minecraft.potion.Effect;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
-import net.minecraft.util.Direction;
 import net.minecraft.util.IItemProvider;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.GameRules;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
-import net.minecraftforge.event.entity.living.LivingExperienceDropEvent;
 import net.minecraftforge.event.entity.living.LivingHealEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -48,7 +43,6 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.fml.common.Mod;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @Mod.EventBusSubscriber(modid = Feruchemy.MOD_ID, value = Dist.DEDICATED_SERVER)
@@ -59,7 +53,7 @@ public class ServerEventHandler {
         LivingEntity entity = event.getEntityLiving();
         if(!entity.world.isRemote() && entity instanceof PlayerEntity){
             ItemStack itemstack = FeruchemyUtils.getMetalMindStack((PlayerEntity) entity);
-            AllomancyCapability capability = AllomancyCapability.forPlayer(entity);
+            IAllomancerData capability = entity.getCapability(AllomancerCapability.PLAYER_CAP).orElse(new DefaultAllomancerData());
             if(itemstack!=null && capability.isBurning(Metal.GOLD) && MetalMind.getStatus(itemstack, Metal.GOLD)== MetalMind.Status.TAPPING){
                 event.setCanceled(true);
                 entity.setHealth(1.0F);

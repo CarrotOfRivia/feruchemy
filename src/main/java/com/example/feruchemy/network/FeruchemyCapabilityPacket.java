@@ -1,8 +1,6 @@
 package com.example.feruchemy.network;
 
 import com.example.feruchemy.caps.FeruchemyCapability;
-import com.legobmw99.allomancy.modules.powers.network.AllomancyCapabilityPacket;
-import com.legobmw99.allomancy.modules.powers.util.AllomancyCapability;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundNBT;

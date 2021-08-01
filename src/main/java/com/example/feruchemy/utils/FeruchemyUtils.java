@@ -3,36 +3,26 @@ package com.example.feruchemy.utils;
 import com.example.feruchemy.caps.FeruchemyCapability;
 import com.example.feruchemy.items.ItemRegister;
 import com.example.feruchemy.items.MetalMind;
+import com.legobmw99.allomancy.api.data.IAllomancerData;
+import com.legobmw99.allomancy.api.enums.Metal;
 import com.legobmw99.allomancy.modules.materials.MaterialsSetup;
-import com.legobmw99.allomancy.modules.powers.PowersConfig;
-import com.legobmw99.allomancy.modules.powers.util.AllomancyCapability;
-import com.legobmw99.allomancy.setup.Metal;
-import com.mojang.blaze3d.matrix.MatrixStack;
-import net.minecraft.client.MainWindow;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.player.ClientPlayerEntity;
-import net.minecraft.client.renderer.texture.Texture;
+import com.legobmw99.allomancy.modules.powers.data.AllomancerCapability;
+import com.legobmw99.allomancy.modules.powers.data.DefaultAllomancerData;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.ICommandSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.potion.Effect;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.vector.Vector2f;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.client.gui.ForgeIngameGui;
-import net.minecraftforge.fml.RegistryObject;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
-import org.lwjgl.opengl.GL11;
+import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.type.util.ICuriosHelper;
-import top.theillusivec4.curios.common.CuriosHelper;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,17 +38,16 @@ public class FeruchemyUtils {
         // search create band first
         // I should've written it into a function
         if(ExternalMods.CURIOS.isLoaded()){
-            Optional<ImmutableTriple<String, Integer, ItemStack>> tmp = new CuriosHelper().findEquippedCurio(ItemRegister.THE_BAND_OF_RITUAL_MOURNING.get(), player);
+            ICuriosHelper helper = CuriosApi.getCuriosHelper();
+            Optional<ImmutableTriple<String, Integer, ItemStack>> tmp = helper.findEquippedCurio(ItemRegister.THE_BAND_OF_RITUAL_MOURNING.get(), player);
             if(tmp.isPresent()){
                 ItemStack stack = tmp.get().getRight();
                 if (stack.getItem() instanceof MetalMind){
                     return stack;
                 }
             }
-        }
 
-        if(ExternalMods.CURIOS.isLoaded()){
-            Optional<ImmutableTriple<String, Integer, ItemStack>> tmp = new CuriosHelper().findEquippedCurio(ItemRegister.METAL_MIND.get(), player);
+            tmp = helper.findEquippedCurio(ItemRegister.METAL_MIND.get(), player);
             if(tmp.isPresent()){
                 ItemStack stack = tmp.get().getRight();
                 if (stack.getItem() instanceof MetalMind){
@@ -164,7 +153,7 @@ public class FeruchemyUtils {
                 case STORING:
                     return new FeruStatus(1, 0);
                 case TAPPING:
-                    AllomancyCapability capability = AllomancyCapability.forPlayer(playerEntity);
+                    IAllomancerData capability = playerEntity.getCapability(AllomancerCapability.PLAYER_CAP).orElse(new DefaultAllomancerData());
                     if(capability.isBurning(metal)){
                         return new FeruStatus(0, 4);
                     }

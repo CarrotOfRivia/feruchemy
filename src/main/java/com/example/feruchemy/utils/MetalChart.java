@@ -3,34 +3,20 @@ package com.example.feruchemy.utils;
 import com.example.feruchemy.caps.FeruchemyCapability;
 import com.example.feruchemy.effects.EffectRegister;
 import com.example.feruchemy.items.MetalMind;
-import com.legobmw99.allomancy.modules.materials.MaterialsSetup;
-import com.legobmw99.allomancy.modules.powers.util.AllomancyCapability;
-import com.legobmw99.allomancy.setup.Metal;
-import com.mojang.brigadier.context.CommandContextBuilder;
+import com.legobmw99.allomancy.api.enums.Metal;
+import com.legobmw99.allomancy.modules.powers.data.AllomancerCapability;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
-import net.minecraft.block.IceBlock;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.ICommandSource;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.monster.PhantomEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.particles.ParticleTypes;
-import net.minecraft.potion.Effect;
-import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
 import net.minecraft.tags.FluidTags;
-import net.minecraft.tileentity.SignTileEntity;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector2f;
 import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.GameRules;
 import net.minecraft.world.server.ServerWorld;
 
 import java.util.*;
@@ -93,12 +79,15 @@ public class MetalChart {
                     if(MetalMind.getTimer(itemStack) <= 0){
                         MetalMind.setTimer(itemStack, 600);
                         EntityType.PHANTOM.spawn(world, null, playerEntity, playerEntity.getPosition().add(0, 2, 0), SpawnReason.SPAWN_EGG, true, true);
-                        AllomancyCapability cap = AllomancyCapability.forPlayer(playerEntity);
-                        int charge = 30;
-                        if (cap.isBurning(Metal.BRONZE)){
-                            charge = charge * 10;
-                        }
-                        MetalMind.addCharge(itemStack, Metal.BRONZE, charge);
+                        playerEntity.getCapability(AllomancerCapability.PLAYER_CAP).ifPresent(
+                                (cap) ->{
+                                    int charge = 30;
+                                    if (cap.isBurning(Metal.BRONZE)){
+                                        charge = charge * 10;
+                                    }
+                                    MetalMind.addCharge(itemStack, Metal.BRONZE, charge);
+                                }
+                        );
                     }
                 }))
         )));

@@ -1,7 +1,7 @@
 package com.example.feruchemy.caps;
 
 import com.example.feruchemy.config.Config;
-import com.legobmw99.allomancy.setup.Metal;
+import com.legobmw99.allomancy.api.enums.Metal;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundNBT;

@@ -3,7 +3,7 @@ package com.example.feruchemy.events;
 import com.example.feruchemy.Feruchemy;
 import com.example.feruchemy.utils.FeruStatus;
 import com.example.feruchemy.utils.FeruchemyUtils;
-import com.legobmw99.allomancy.setup.Metal;
+import com.legobmw99.allomancy.api.enums.Metal;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
