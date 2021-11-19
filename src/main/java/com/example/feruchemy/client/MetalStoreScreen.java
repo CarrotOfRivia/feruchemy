@@ -28,6 +28,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -35,7 +36,10 @@ import java.util.Arrays;
 
 @OnlyIn(Dist.CLIENT)
 public class MetalStoreScreen extends Screen {
-    private static final String[] METAL_NAMES = Arrays.stream(Metal.values()).map(Metal::getName).toArray(String[]::new);
+    private static final String[] METAL_NAMES = (String[])Arrays.stream(Metal.values()).map(Metal::getName).toArray((x$0) -> {
+        return new String[x$0];
+    });
+    private static final String[] METAL_LOCAL;
     private static final String GUI_METAL = "allomancy:textures/gui/metals/%s_symbol.png";
     private static final ResourceLocation[] METAL_ICONS;
     int timeIn;
@@ -54,7 +58,7 @@ public class MetalStoreScreen extends Screen {
     }
 
     private static int toMetalIndex(int segment) {
-        return (segment + 8) % Metal.values().length;
+        return (segment + 5) % Metal.values().length;
     }
 
     @Override
@@ -177,7 +181,7 @@ public class MetalStoreScreen extends Screen {
             float yp = (float)y + MathHelper.sin(rad) * radius;
             float xsp = xp - 4.0F;
             float ysp = yp;
-            String name = (mouseInSector ? TextFormatting.UNDERLINE : TextFormatting.RESET) + METAL_NAMES[toMetalIndex(seg)];
+            String name = (mouseInSector ? TextFormatting.UNDERLINE : TextFormatting.RESET) + (new TranslationTextComponent(METAL_LOCAL[toMetalIndex(seg)])).getString();
             int width = this.mc.getRenderManager().getFontRenderer().getStringWidth(name);
             if (xsp < (float)x) {
                 xsp -= (float)(width - 8);
@@ -251,6 +255,14 @@ public class MetalStoreScreen extends Screen {
             return new ResourceLocation(String.format("feruchemy:textures/gui/metals/%s.png", s.toLowerCase()));
         }).toArray((x$0) -> {
             return new ResourceLocation[x$0];
+        });
+    }
+
+    static {
+        METAL_LOCAL = (String[])Arrays.stream(METAL_NAMES).map((s) -> {
+            return "metals." + s;
+        }).toArray((x$0) -> {
+            return new String[x$0];
         });
     }
 }

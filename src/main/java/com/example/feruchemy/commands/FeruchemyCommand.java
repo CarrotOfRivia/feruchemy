@@ -30,7 +30,7 @@ public class FeruchemyCommand {
                             return 1;}
                 ))))
 
-                .then(Commands.argument("player", EntityArgument.player()).then(Commands.literal("remove").then(Commands.argument("type", AllomancyPowerType.INSTANCE)).executes(
+                .then(Commands.argument("player", EntityArgument.player()).then(Commands.literal("remove").then(Commands.argument("type", AllomancyPowerType.INSTANCE).executes(
                         context -> {
                             String type = context.getArgument("type", String.class).toUpperCase();
                             if ("all".equalsIgnoreCase(type)) {
@@ -40,7 +40,7 @@ public class FeruchemyCommand {
                                 FeruchemyCapability.revokePower(mt, EntityArgument.getPlayer(context, "player"));
                             }
                             return 1;}
-                )));
+                ))));
 
         dispatcher.register(feruchemyCommand);
     }
