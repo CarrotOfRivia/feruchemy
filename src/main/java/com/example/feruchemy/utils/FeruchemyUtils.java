@@ -8,16 +8,16 @@ import com.legobmw99.allomancy.api.enums.Metal;
 import com.legobmw99.allomancy.modules.materials.MaterialsSetup;
 import com.legobmw99.allomancy.modules.powers.data.AllomancerCapability;
 import com.legobmw99.allomancy.modules.powers.data.DefaultAllomancerData;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.ICommandSource;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.potion.EffectInstance;
-import net.minecraft.potion.Effects;
-import net.minecraft.util.math.vector.Vector2f;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.CommandSource;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.phys.Vec2;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.server.level.ServerLevel;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.type.util.ICuriosHelper;
@@ -34,7 +34,7 @@ public class FeruchemyUtils {
         }
     }
 
-    public static ItemStack getMetalMindStack(PlayerEntity player){
+    public static ItemStack getMetalMindStack(Player player){
         // search create band first
         // I should've written it into a function
         if(ExternalMods.CURIOS.isLoaded()){
@@ -57,7 +57,7 @@ public class FeruchemyUtils {
         }
 
         for(int i=0; i<9; i++){
-            ItemStack stack = player.inventory.getStackInSlot(i);
+            ItemStack stack = player.inventory.getItem(i);
             if(stack.getItem() instanceof MetalMind){
                 return stack;
             }
@@ -65,7 +65,7 @@ public class FeruchemyUtils {
         return null;
     }
 
-    public static boolean canPlayerTap(PlayerEntity playerEntity, ItemStack itemStack, Metal metal){
+    public static boolean canPlayerTap(Player playerEntity, ItemStack itemStack, Metal metal){
         if(itemStack.getItem() instanceof MetalMind && ((MetalMind) itemStack.getItem()).isInf()){
             return true;
         }
@@ -81,7 +81,7 @@ public class FeruchemyUtils {
     }
 
 
-    public static boolean canPlayerStore(PlayerEntity playerEntity, ItemStack itemStack, Metal metal){
+    public static boolean canPlayerStore(Player playerEntity, ItemStack itemStack, Metal metal){
         if(itemStack.getItem() instanceof MetalMind && ((MetalMind) itemStack.getItem()).isInf()){
             return true;
         }
@@ -102,7 +102,7 @@ public class FeruchemyUtils {
         return (condition3 && ((playerFid == itemFid) || condition1 || (itemFid == -1))) || condition2;
     }
 
-    public static void whenEnd(PlayerEntity playerEntity, ItemStack itemStack, Metal metal, MetalMind.Status status){
+    public static void whenEnd(Player playerEntity, ItemStack itemStack, Metal metal, MetalMind.Status status){
         if(status == MetalMind.Status.TAPPING){
             whenTappingEnd(playerEntity, itemStack, metal);
         }
@@ -112,41 +112,41 @@ public class FeruchemyUtils {
     }
 
 
-    public static void whenStoringEnd(PlayerEntity playerEntity, ItemStack itemStack, Metal metal){
+    public static void whenStoringEnd(Player playerEntity, ItemStack itemStack, Metal metal){
         // called when storing/tapping ends
-        if(! playerEntity.world.isRemote()){
+        if(! playerEntity.level.isClientSide()){
             if(metal == Metal.TIN){
-                EffectInstance effectInstance = playerEntity.getActivePotionEffect(Effects.BLINDNESS);
+                MobEffectInstance effectInstance = playerEntity.getEffect(MobEffects.BLINDNESS);
                 if(effectInstance!=null && effectInstance.getDuration() <= 3*MetalMind.CD){
-                    playerEntity.removePotionEffect(Effects.BLINDNESS);
+                    playerEntity.removeEffect(MobEffects.BLINDNESS);
                 }
             }
             else if(metal == Metal.ZINC){
-                ServerWorld world = (ServerWorld) playerEntity.world;
-                world.getServer().getCommandManager().handleCommand(new CommandSource(ICommandSource.DUMMY, playerEntity.getPositionVec(), Vector2f.ZERO, world, 2, "null", new StringTextComponent(""), world.getServer(), null),
+                ServerLevel world = (ServerLevel) playerEntity.level;
+                world.getServer().getCommands().performCommand(new CommandSourceStack(CommandSource.NULL, playerEntity.position(), Vec2.ZERO, world, 2, "null", new TextComponent(""), world.getServer(), null),
                         "/gamerule randomTickSpeed 3");
             }
         }
     }
 
-    public static void whenTappingEnd(PlayerEntity playerEntity, ItemStack itemStack, Metal metal) {
+    public static void whenTappingEnd(Player playerEntity, ItemStack itemStack, Metal metal) {
         // called when storing/tapping ends
-        if (!playerEntity.world.isRemote()) {
+        if (!playerEntity.level.isClientSide()) {
             if(metal == Metal.TIN){
-                EffectInstance effectInstance = playerEntity.getActivePotionEffect(Effects.NIGHT_VISION);
+                MobEffectInstance effectInstance = playerEntity.getEffect(MobEffects.NIGHT_VISION);
                 if(effectInstance!=null && effectInstance.getDuration() <= 210+MetalMind.CD){
-                    playerEntity.removePotionEffect(Effects.NIGHT_VISION);
+                    playerEntity.removeEffect(MobEffects.NIGHT_VISION);
                 }
             }
             else if(metal == Metal.ZINC){
-                ServerWorld world = (ServerWorld) playerEntity.world;
-                world.getServer().getCommandManager().handleCommand(new CommandSource(ICommandSource.DUMMY, playerEntity.getPositionVec(), Vector2f.ZERO, world, 2, "null", new StringTextComponent(""), world.getServer(), null),
+                ServerLevel world = (ServerLevel) playerEntity.level;
+                world.getServer().getCommands().performCommand(new CommandSourceStack(CommandSource.NULL, playerEntity.position(), Vec2.ZERO, world, 2, "null", new TextComponent(""), world.getServer(), null),
                         "/gamerule doDaylightCycle true");
             }
         }
     }
 
-    public static FeruStatus getStatus(PlayerEntity playerEntity, Metal metal){
+    public static FeruStatus getStatus(Player playerEntity, Metal metal){
         ItemStack metalMind = getMetalMindStack(playerEntity);
         if (metalMind != null){
             switch (MetalMind.getStatus(metalMind, metal)){

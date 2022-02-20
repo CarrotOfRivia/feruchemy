@@ -1,7 +1,7 @@
 package com.example.feruchemy.items;
 
 import com.example.feruchemy.Feruchemy;
-import net.minecraft.item.Item;
+import net.minecraft.world.item.Item;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.DeferredRegister;

@@ -7,19 +7,19 @@ import com.example.feruchemy.utils.InstanceFactory;
 import com.example.feruchemy.utils.MetalChart;
 import com.legobmw99.allomancy.api.enums.Metal;
 import com.legobmw99.allomancy.modules.powers.data.AllomancerCapability;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.potion.EffectInstance;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.World;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.ChatFormatting;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -40,7 +40,7 @@ public class MetalMind extends Item {
             .collect(Collectors.toList());
 
     public MetalMind() {
-        super(new Item.Properties().group(Feruchemy.ITEM_GROUP).maxStackSize(1));
+        super(new Item.Properties().tab(Feruchemy.ITEM_GROUP).stacksTo(1));
     }
 
     public static int getMaxStorage(ItemStack itemStack, Metal metal){
@@ -48,11 +48,11 @@ public class MetalMind extends Item {
     }
 
     @Override
-    public ActionResult<ItemStack> onItemRightClick(World worldIn, PlayerEntity playerIn, Hand handIn) {
-        if(!worldIn.isRemote()){
-            ItemStack flakes = playerIn.getHeldItemOffhand();
-            ItemStack metalMind = playerIn.getHeldItemMainhand();
-            if(FeruchemyUtils.FLAKE_ITEMS.contains(flakes.getItem()) && handIn==Hand.MAIN_HAND){
+    public InteractionResultHolder<ItemStack> use(Level worldIn, Player playerIn, InteractionHand handIn) {
+        if(!worldIn.isClientSide()){
+            ItemStack flakes = playerIn.getOffhandItem();
+            ItemStack metalMind = playerIn.getMainHandItem();
+            if(FeruchemyUtils.FLAKE_ITEMS.contains(flakes.getItem()) && handIn==InteractionHand.MAIN_HAND){
                 String itemName = Objects.requireNonNull(flakes.getItem().getRegistryName()).getPath();
                 String metalName = itemName.split("_")[0];
                 Metal metal = Metal.valueOf(metalName.toUpperCase());
@@ -65,7 +65,7 @@ public class MetalMind extends Item {
                 flakes.shrink(flakes.getCount());
             }
         }
-        return super.onItemRightClick(worldIn, playerIn, handIn);
+        return super.use(worldIn, playerIn, handIn);
     }
 
     public MetalMind setInf() {
@@ -76,8 +76,8 @@ public class MetalMind extends Item {
     public static void setFlakeCount(ItemStack itemStack, Metal metal, int count){
         assert itemStack.getItem() instanceof MetalMind;
 
-        CompoundNBT nbt = itemStack.getOrCreateTag();
-        CompoundNBT metalNbt = nbt.getCompound(metal.toString());
+        CompoundTag nbt = itemStack.getOrCreateTag();
+        CompoundTag metalNbt = nbt.getCompound(metal.toString());
         metalNbt.putInt("flake", count);
         nbt.put(metal.toString(), metalNbt);
     }
@@ -85,12 +85,12 @@ public class MetalMind extends Item {
     public static int getFlakeCount(ItemStack itemStack, Metal metal){
         assert itemStack.getItem() instanceof MetalMind;
 
-        CompoundNBT nbt = itemStack.getTag();
+        CompoundTag nbt = itemStack.getTag();
         if (nbt == null){
             return 0;
         }
         else {
-            CompoundNBT metalNbt = nbt.getCompound(metal.toString());
+            CompoundTag metalNbt = nbt.getCompound(metal.toString());
             return metalNbt.getInt("flake");
         }
     }
@@ -125,9 +125,9 @@ public class MetalMind extends Item {
             setLevel(itemStack, metal, prev_level+1);
         }
 
-        CompoundNBT nbt = itemStack.getOrCreateTag();
+        CompoundTag nbt = itemStack.getOrCreateTag();
 
-        CompoundNBT metalNbt = nbt.getCompound(metal.toString());
+        CompoundTag metalNbt = nbt.getCompound(metal.toString());
         metalNbt.putString("status", status.toString());
         nbt.put(metal.toString(), metalNbt);
     }
@@ -142,8 +142,8 @@ public class MetalMind extends Item {
     public static Status getStatus(ItemStack itemStack, Metal metal){
         assert itemStack.getItem() instanceof MetalMind;
 
-        CompoundNBT nbt = itemStack.getOrCreateTag();
-        CompoundNBT metalNbt = nbt.getCompound(metal.toString());
+        CompoundTag nbt = itemStack.getOrCreateTag();
+        CompoundTag metalNbt = nbt.getCompound(metal.toString());
 
         String status = metalNbt.getString("status");
         if ("".equals(status)){
@@ -157,16 +157,16 @@ public class MetalMind extends Item {
     public static int getTimer(ItemStack itemStack){
         assert itemStack.getItem() instanceof MetalMind;
 
-        CompoundNBT nbt = itemStack.getOrCreateTag();
-        CompoundNBT metalNbt = nbt.getCompound(Metal.BRONZE.toString());
+        CompoundTag nbt = itemStack.getOrCreateTag();
+        CompoundTag metalNbt = nbt.getCompound(Metal.BRONZE.toString());
         return metalNbt.getInt("timer");
     }
 
     public static void setTimer(ItemStack itemStack, int timer){
         assert itemStack.getItem() instanceof MetalMind;
 
-        CompoundNBT nbt = itemStack.getOrCreateTag();
-        CompoundNBT metalNbt = nbt.getCompound(Metal.BRONZE.toString());
+        CompoundTag nbt = itemStack.getOrCreateTag();
+        CompoundTag metalNbt = nbt.getCompound(Metal.BRONZE.toString());
         metalNbt.putInt("timer", timer);
         nbt.put(Metal.BRONZE.toString(), metalNbt);
     }
@@ -178,12 +178,12 @@ public class MetalMind extends Item {
     public static int getCharge(ItemStack itemStack, Metal metal){
         assert itemStack.getItem() instanceof MetalMind;
 
-        CompoundNBT nbt = itemStack.getTag();
+        CompoundTag nbt = itemStack.getTag();
         if (nbt == null){
             return 0;
         }
         else {
-            CompoundNBT metalNbt = nbt.getCompound(metal.toString());
+            CompoundTag metalNbt = nbt.getCompound(metal.toString());
             return metalNbt.getInt("charge");
         }
     }
@@ -191,8 +191,8 @@ public class MetalMind extends Item {
     public static void setCharge(ItemStack itemStack, Metal metal, int count){
         assert itemStack.getItem() instanceof MetalMind;
 
-        CompoundNBT nbt = itemStack.getOrCreateTag();
-        CompoundNBT metalNbt = nbt.getCompound(metal.toString());
+        CompoundTag nbt = itemStack.getOrCreateTag();
+        CompoundTag metalNbt = nbt.getCompound(metal.toString());
         metalNbt.putInt("charge", count);
     }
 
@@ -206,12 +206,12 @@ public class MetalMind extends Item {
     public static int getLevel(ItemStack itemStack, Metal metal){
         assert itemStack.getItem() instanceof MetalMind;
 
-        CompoundNBT nbt = itemStack.getTag();
+        CompoundTag nbt = itemStack.getTag();
         if (nbt == null){
             return 0;
         }
         else {
-            CompoundNBT metalNbt = nbt.getCompound(metal.toString());
+            CompoundTag metalNbt = nbt.getCompound(metal.toString());
             int level = metalNbt.getInt("level");
             return Math.max(level, 1);
         }
@@ -220,17 +220,17 @@ public class MetalMind extends Item {
     public static void setLevel(ItemStack itemStack, Metal metal, int level){
         assert itemStack.getItem() instanceof MetalMind;
 
-        CompoundNBT nbt = itemStack.getOrCreateTag();
-        CompoundNBT metalNbt = nbt.getCompound(metal.toString());
+        CompoundTag nbt = itemStack.getOrCreateTag();
+        CompoundTag metalNbt = nbt.getCompound(metal.toString());
         metalNbt.putInt("level", level);
     }
 
     public static void pauseAll(ItemStack itemStack){
         assert itemStack.getItem() instanceof MetalMind;
 
-        CompoundNBT nbt = itemStack.getTag();
+        CompoundTag nbt = itemStack.getTag();
         if(nbt!=null){
-            for (String key: nbt.keySet()){
+            for (String key: nbt.getAllKeys()){
                 if (! validMetalStrings.contains(key)){
                     continue;
                 }
@@ -259,17 +259,17 @@ public class MetalMind extends Item {
     }
 
     @Override
-    public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
-        super.addInformation(stack, worldIn, tooltip, flagIn);
+    public void appendHoverText(ItemStack stack, @Nullable Level worldIn, List<Component> tooltip, TooltipFlag flagIn) {
+        super.appendHoverText(stack, worldIn, tooltip, flagIn);
         if(isInf()){
-            tooltip.add(new StringTextComponent("This Band holds an Insane amount of Investiture").mergeStyle(TextFormatting.GOLD));
+            tooltip.add(new TextComponent("This Band holds an Insane amount of Investiture").withStyle(ChatFormatting.GOLD));
         }
 
-        CompoundNBT nbt = stack.getTag();
+        CompoundTag nbt = stack.getTag();
         if(nbt!=null){
-            Set<String> keySet = nbt.keySet();
+            Set<String> keySet = nbt.getAllKeys();
             if(keySet.contains("fid")){
-                tooltip.add(new StringTextComponent("FID: ").mergeStyle(TextFormatting.GRAY).appendSibling(new StringTextComponent(toDigit(nbt.getInt("fid"), 4)).mergeStyle(TextFormatting.RED)));
+                tooltip.add(new TextComponent("FID: ").withStyle(ChatFormatting.GRAY).append(new TextComponent(toDigit(nbt.getInt("fid"), 4)).withStyle(ChatFormatting.RED)));
             }
 
             for (Metal metal: Metal.values()){
@@ -283,11 +283,11 @@ public class MetalMind extends Item {
                         additional = "";
                     }
                     if(isInf()){
-                        tooltip.add(new StringTextComponent(metal+ ": ").appendSibling(new StringTextComponent(" INF")
-                                .appendSibling(new StringTextComponent(" "+status+additional)).appendSibling(new StringTextComponent(" FLAKES: INF")).mergeStyle(TextFormatting.GRAY)));
+                        tooltip.add(new TextComponent(metal+ ": ").append(new TextComponent(" INF")
+                                .append(new TextComponent(" "+status+additional)).append(new TextComponent(" FLAKES: INF")).withStyle(ChatFormatting.GRAY)));
                     }else {
-                        tooltip.add(new StringTextComponent(metal+ ": ").appendSibling(new StringTextComponent(" "+ Math.max(0, getCharge(stack, metal)))
-                                .appendSibling(new StringTextComponent(" "+status+additional)).appendSibling(new StringTextComponent(" FLAKES: "+getFlakeCount(stack, metal))).mergeStyle(TextFormatting.GRAY)));
+                        tooltip.add(new TextComponent(metal+ ": ").append(new TextComponent(" "+ Math.max(0, getCharge(stack, metal)))
+                                .append(new TextComponent(" "+status+additional)).append(new TextComponent(" FLAKES: "+getFlakeCount(stack, metal))).withStyle(ChatFormatting.GRAY)));
                     }
                 }
             }
@@ -297,7 +297,7 @@ public class MetalMind extends Item {
     public static int getFid(ItemStack stack){
         // 0-9999 FID
         // -1: not initialized
-        CompoundNBT nbt = stack.getTag();
+        CompoundTag nbt = stack.getTag();
         if (nbt == null){
             return -1;
         }
@@ -312,7 +312,7 @@ public class MetalMind extends Item {
     }
 
     public static void setFid(ItemStack stack, int fid){
-        CompoundNBT nbt = stack.getTag();
+        CompoundTag nbt = stack.getTag();
         if (nbt != null){
             nbt.putInt("fid", fid);
         }
@@ -331,7 +331,7 @@ public class MetalMind extends Item {
     }
 
     @Override
-    public void inventoryTick(ItemStack stack, World worldIn, Entity entityIn, int itemSlot, boolean isSelected) {
+    public void inventoryTick(ItemStack stack, Level worldIn, Entity entityIn, int itemSlot, boolean isSelected) {
         if(getFlakeCount(stack, Metal.BRONZE) == 0 && stack.getItem() instanceof MetalMind && ((MetalMind) stack.getItem()).isInf()){
             for(Metal metal: Metal.values()){
                 setStatus(stack, Status.NULL, metal);
@@ -341,11 +341,11 @@ public class MetalMind extends Item {
         }
 
         super.inventoryTick(stack, worldIn, entityIn, itemSlot, isSelected);
-        if(!worldIn.isRemote() && (worldIn.getGameTime() % CD == 0)){
-            CompoundNBT nbt = stack.getTag();
+        if(!worldIn.isClientSide() && (worldIn.getGameTime() % CD == 0)){
+            CompoundTag nbt = stack.getTag();
             if(nbt != null){
                 // common ticking: consume items, etc..
-                for (String key: nbt.keySet()){
+                for (String key: nbt.getAllKeys()){
                     if (! validMetalStrings.contains(key)){
                         continue;
                     }
@@ -381,14 +381,14 @@ public class MetalMind extends Item {
                                         }
                                     }
                                     else {
-                                        FeruchemyUtils.whenStoringEnd((PlayerEntity) entityIn, stack, metal);
+                                        FeruchemyUtils.whenStoringEnd((Player) entityIn, stack, metal);
                                         setStatus(stack, Status.FULL, metal);
                                     }
                                 }
                                 else if(status == Status.TAPPING && !cap.isBurning(metal)){
                                     int count = getCharge(stack, metal);
                                     if (count <= 0 && (!canNicrosilTap)){
-                                        FeruchemyUtils.whenTappingEnd((PlayerEntity) entityIn, stack, metal);
+                                        FeruchemyUtils.whenTappingEnd((Player) entityIn, stack, metal);
                                         setCharge(stack, metal, 0);
                                         setStatus(stack, Status.EMPTY, metal);
                                     }
@@ -413,7 +413,7 @@ public class MetalMind extends Item {
                 }
 
                 // Apply effect when storing or tapping
-                for (String key: nbt.keySet()){
+                for (String key: nbt.getAllKeys()){
                     if (! validMetalStrings.contains(key)){
                         continue;
                     }
@@ -426,7 +426,7 @@ public class MetalMind extends Item {
                                     instanceFactories = MetalChart.STORING_EFFECT_MAP.get(metal);
                                 }
 
-                                else if(status == Status.TAPPING && FeruchemyUtils.canPlayerTap((PlayerEntity) entityIn, stack, metal)){
+                                else if(status == Status.TAPPING && FeruchemyUtils.canPlayerTap((Player) entityIn, stack, metal)){
                                     List<HashSet<InstanceFactory>> tmp = MetalChart.TAPPING_MAP.get(metal);
                                     if(tmp != null){
                                         instanceFactories = tmp.get(getLevel(stack, metal)-1);
@@ -439,8 +439,8 @@ public class MetalMind extends Item {
                                 if (instanceFactories != null){
                                     for (InstanceFactory instanceFactory: instanceFactories){
                                         if(instanceFactory != null){
-                                            instanceFactory.getOtherEffects().accept((PlayerEntity) entityIn, stack);
-                                            EffectInstance instance = instanceFactory.get();
+                                            instanceFactory.getOtherEffects().accept((Player) entityIn, stack);
+                                            MobEffectInstance instance = instanceFactory.get();
                                             if(instance != null){
                                                 if((status==Status.STORING && (metal==Metal.STEEL || metal==Metal.PEWTER || metal==Metal.TIN))){
                                                     // avoid status conflict
@@ -448,7 +448,7 @@ public class MetalMind extends Item {
                                                         break;
                                                     }
                                                 }
-                                                ((PlayerEntity)entityIn).addPotionEffect(instanceFactory.get());
+                                                ((Player)entityIn).addEffect(instanceFactory.get());
                                             }
                                         }
                                     }

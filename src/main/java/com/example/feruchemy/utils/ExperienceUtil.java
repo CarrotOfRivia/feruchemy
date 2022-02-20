@@ -26,7 +26,7 @@ package com.example.feruchemy.utils;
 
 import java.util.stream.IntStream;
 
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.world.entity.player.Player;
 
 public class ExperienceUtil
 {
@@ -65,14 +65,14 @@ public class ExperienceUtil
         return sum + Math.round( expBarCap( level ) * expBar );
     }
 
-    public static int getPlayerExp( PlayerEntity player )
+    public static int getPlayerExp( Player player )
     {
-        return levelToExp( player.experienceLevel, player.experience );
+        return levelToExp( player.experienceLevel, player.experienceProgress );
     }
 
-    public static void addExpToPlayer( PlayerEntity player, int value )
+    public static void addExpToPlayer( Player player, int value )
     {
-        player.addScore( value );
+        player.increaseScore( value );
 
         int playerExp = getPlayerExp( player );
         int limit = Integer.MAX_VALUE - playerExp;
@@ -81,20 +81,20 @@ public class ExperienceUtil
         int level = expToLevel( exp );
         float rest = exp - levelToExp( level, 0.0F );
 
-        player.experienceTotal += _value;
+        player.totalExperience += _value;
         player.experienceLevel = level;
-        player.experience = rest / expBarCap( level );
+        player.experienceProgress = rest / expBarCap( level );
     }
 
 
-    public static boolean removeExpFromPlayer( PlayerEntity player, int value )
+    public static boolean removeExpFromPlayer( Player player, int value )
     {
         int exp = getPlayerExp( player );
 
-        player.addScore( -exp );
-        player.experienceTotal -= exp;
+        player.increaseScore( -exp );
+        player.totalExperience -= exp;
         player.experienceLevel = 0;
-        player.experience = 0;
+        player.experienceProgress = 0;
 
         if ( exp > value )
         {

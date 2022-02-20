@@ -14,21 +14,21 @@ import com.legobmw99.allomancy.api.enums.Metal;
 import com.legobmw99.allomancy.modules.powers.PowersConfig;
 import com.legobmw99.allomancy.modules.powers.data.AllomancerCapability;
 import com.legobmw99.allomancy.modules.powers.data.DefaultAllomancerData;
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.player.ClientPlayerEntity;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.gui.screens.Screen;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.platform.Lighting;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -47,14 +47,14 @@ public class MetalStoreScreen extends Screen {
     Minecraft mc;
 
     public MetalStoreScreen() {
-        super(new StringTextComponent("allomancy_gui"));
+        super(new TextComponent("allomancy_gui"));
         this.timeIn = (Boolean) PowersConfig.animate_selection.get() ? 0 : 16;
         this.slotSelected = -1;
         this.mc = Minecraft.getInstance();
     }
 
     private static double mouseAngle(int x, int y, int mx, int my) {
-        return (MathHelper.atan2((double)(my - y), (double)(mx - x)) + 6.283185307179586D) % 6.283185307179586D;
+        return (Mth.atan2((double)(my - y), (double)(mx - x)) + 6.283185307179586D) % 6.283185307179586D;
     }
 
     private static int toMetalIndex(int segment) {
@@ -62,7 +62,7 @@ public class MetalStoreScreen extends Screen {
     }
 
     @Override
-    public void render(MatrixStack matrixStack, int mx, int my, float partialTicks) {
+    public void render(PoseStack matrixStack, int mx, int my, float partialTicks) {
         super.render(matrixStack, mx, my, partialTicks);
         int x = this.width / 2;
         int y = this.height / 2;
@@ -72,13 +72,13 @@ public class MetalStoreScreen extends Screen {
         float step = 0.017453292F;
         float degPer = 6.2831855F / (float)segments;
         this.slotSelected = -1;
-        Tessellator tess = Tessellator.getInstance();
-        BufferBuilder buf = tess.getBuffer();
+        Tesselator tess = Tesselator.getInstance();
+        BufferBuilder buf = tess.getBuilder();
         RenderSystem.disableCull();
         RenderSystem.disableTexture();
         RenderSystem.enableBlend();
         RenderSystem.shadeModel(7424);
-        buf.begin(6, DefaultVertexFormats.POSITION_COLOR);
+        buf.begin(6, DefaultVertexFormat.POSITION_COLOR);
 
         int seg;
         Metal mt;
@@ -101,7 +101,7 @@ public class MetalStoreScreen extends Screen {
             int r = gs;
             int g = gs;
             int b = gs;
-            ClientPlayerEntity player = mc.player;
+            LocalPlayer player = mc.player;
             assert player != null;
             ItemStack itemStack = FeruchemyUtils.getMetalMindStack(player);
             if (itemStack != null){
@@ -150,22 +150,22 @@ public class MetalStoreScreen extends Screen {
             }
             int a = 153;
             if (seg == 0) {
-                buf.pos((double)x, (double)y, 0.0D).color(r, gs, gs, a).endVertex();
+                buf.vertex((double)x, (double)y, 0.0D).color(r, gs, gs, a).endVertex();
             }
 
             for(float i = 0.0F; i < degPer + step / 2.0F; i += step) {
                 float rad = i + (float)seg * degPer;
-                float xp = (float)x + MathHelper.cos(rad) * radius;
-                float yp = (float)y + MathHelper.sin(rad) * radius;
+                float xp = (float)x + Mth.cos(rad) * radius;
+                float yp = (float)y + Mth.sin(rad) * radius;
                 if (i == 0.0F) {
-                    buf.pos((double)xp, (double)yp, 0.0D).color(r, g, b, a).endVertex();
+                    buf.vertex((double)xp, (double)yp, 0.0D).color(r, g, b, a).endVertex();
                 }
 
-                buf.pos((double)xp, (double)yp, 0.0D).color(r, g, b, a).endVertex();
+                buf.vertex((double)xp, (double)yp, 0.0D).color(r, g, b, a).endVertex();
             }
         }
 
-        tess.draw();
+        tess.end();
         RenderSystem.shadeModel(7424);
         RenderSystem.enableTexture();
 
@@ -177,12 +177,12 @@ public class MetalStoreScreen extends Screen {
             }
 
             float rad = ((float)seg + 0.5F) * degPer;
-            float xp = (float)x + MathHelper.cos(rad) * radius;
-            float yp = (float)y + MathHelper.sin(rad) * radius;
+            float xp = (float)x + Mth.cos(rad) * radius;
+            float yp = (float)y + Mth.sin(rad) * radius;
             float xsp = xp - 4.0F;
             float ysp = yp;
-            String name = (mouseInSector ? TextFormatting.UNDERLINE : TextFormatting.RESET) + (new TranslationTextComponent(METAL_LOCAL[toMetalIndex(seg)])).getString();
-            int width = this.mc.getRenderManager().getFontRenderer().getStringWidth(name);
+            String name = (mouseInSector ? ChatFormatting.UNDERLINE : ChatFormatting.RESET) + (new TranslatableComponent(METAL_LOCAL[toMetalIndex(seg)])).getString();
+            int width = this.mc.getEntityRenderDispatcher().getFont().width(name);
             if (xsp < (float)x) {
                 xsp -= (float)(width - 8);
             }
@@ -191,18 +191,18 @@ public class MetalStoreScreen extends Screen {
                 ysp = yp - 9.0F;
             }
 
-            this.mc.getRenderManager().getFontRenderer().drawStringWithShadow(matrixStack, name, xsp, ysp, 16777215);
+            this.mc.getEntityRenderDispatcher().getFont().drawShadow(matrixStack, name, xsp, ysp, 16777215);
             double mod = 0.8D;
             int xdp = (int)((double)(xp - (float)x) * mod + (double)x);
             int ydp = (int)((double)(yp - (float)y) * mod + (double)y);
-            this.mc.getRenderManager().textureManager.bindTexture(METAL_ICONS[toMetalIndex(seg)]);
+            this.mc.getEntityRenderDispatcher().textureManager.bind(METAL_ICONS[toMetalIndex(seg)]);
             RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
             blit(matrixStack, xdp - 8, ydp - 8, 0.0F, 0.0F, 16, 16, 16, 16);
         }
 
         FeruchemyCapability capability = FeruchemyCapability.forPlayer(this.mc.player);
-        this.mc.getRenderManager().getFontRenderer().drawString(matrixStack, "FID: "+MetalMind.toDigit(capability.getFid(), 4), this.width / 2.0f-30, this.height*0.1f, 0xFC0317);
-        this.mc.getRenderManager().getFontRenderer().drawString(matrixStack, "Stored exp: "+MetalMind.toDigit(capability.getStoredExp(), 4), this.width / 2.0f-36, this.height*0.1f+9, 0x056E2D);
+        this.mc.getEntityRenderDispatcher().getFont().draw(matrixStack, "FID: "+MetalMind.toDigit(capability.getFid(), 4), this.width / 2.0f-30, this.height*0.1f, 0xFC0317);
+        this.mc.getEntityRenderDispatcher().getFont().draw(matrixStack, "Stored exp: "+MetalMind.toDigit(capability.getStoredExp(), 4), this.width / 2.0f-36, this.height*0.1f+9, 0x056E2D);
 
 //        StringBuilder watermarkBuilder = new StringBuilder();
 //        for (int i=0; i<9; i++){
@@ -213,8 +213,8 @@ public class MetalStoreScreen extends Screen {
         RenderSystem.enableRescaleNormal();
         RenderSystem.enableBlend();
         RenderSystem.blendFuncSeparate(770, 771, 1, 0);
-        RenderHelper.enableStandardItemLighting();
-        RenderHelper.disableStandardItemLighting();
+        Lighting.turnBackOn();
+        Lighting.turnOff();
         RenderSystem.disableBlend();
         RenderSystem.disableRescaleNormal();
     }
@@ -236,9 +236,9 @@ public class MetalStoreScreen extends Screen {
 
     @Override
     public boolean keyReleased(int keysym, int scancode, int p_keyReleased_3_) {
-        if (ClientEventSubscriber.storingMenu.matchesKey(keysym, scancode)) {
-            this.mc.displayGuiScreen((Screen)null);
-            this.mc.mouseHelper.grabMouse();
+        if (ClientEventSubscriber.storingMenu.matches(keysym, scancode)) {
+            this.mc.setScreen((Screen)null);
+            this.mc.mouseHandler.grabMouse();
             return true;
         } else {
             return super.keyReleased(keysym, scancode, p_keyReleased_3_);

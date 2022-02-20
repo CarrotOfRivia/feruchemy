@@ -11,10 +11,10 @@ import com.example.feruchemy.items.ItemRegister;
 import com.example.feruchemy.network.PacketRegister;
 import com.example.feruchemy.utils.ExternalMods;
 import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
-import net.minecraft.client.settings.KeyBinding;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.RegistryEvent;
@@ -46,9 +46,9 @@ public class Feruchemy
     private static final Logger LOGGER = LogManager.getLogger();
     public static final String MOD_ID = "feruchemy";
 
-    public static final ItemGroup ITEM_GROUP = new ItemGroup("feruchemy") {
+    public static final CreativeModeTab ITEM_GROUP = new CreativeModeTab("feruchemy") {
         @Override
-        public ItemStack createIcon() {
+        public ItemStack makeIcon() {
             return new ItemStack(ItemRegister.METAL_MIND.get());
         }
     };
@@ -86,10 +86,10 @@ public class Feruchemy
 
     private void doClientStuff(final FMLClientSetupEvent event) {
         // do something that can only be done on the client
-        LOGGER.info("Got game settings {}", event.getMinecraftSupplier().get().gameSettings);
+        LOGGER.info("Got game settings {}", event.getMinecraftSupplier().get().options);
 
         MinecraftForge.EVENT_BUS.register(new ClientEventSubscriber());
-        ClientEventSubscriber.storingMenu = new KeyBinding("key."+MOD_ID+".storing_menu", GLFW.GLFW_KEY_N, "key."+MOD_ID);
+        ClientEventSubscriber.storingMenu = new KeyMapping("key."+MOD_ID+".storing_menu", GLFW.GLFW_KEY_N, "key."+MOD_ID);
         ClientRegistry.registerKeyBinding(ClientEventSubscriber.storingMenu);
     }
 

@@ -1,10 +1,10 @@
 package com.example.feruchemy.effects;
 
-import net.minecraft.potion.Effect;
-import net.minecraft.potion.EffectType;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectCategory;
 
-public class MyEffect extends Effect {
-    public MyEffect(EffectType typeIn, int liquidColorIn) {
+public class MyEffect extends MobEffect {
+    public MyEffect(MobEffectCategory typeIn, int liquidColorIn) {
         super(typeIn, liquidColorIn);
     }
 }

@@ -5,11 +5,11 @@ import com.example.feruchemy.config.Config;
 import com.example.feruchemy.items.MetalMind;
 import com.example.feruchemy.utils.FeruchemyUtils;
 import com.legobmw99.allomancy.api.enums.Metal;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.INetHandler;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.network.play.ServerPlayNetHandler;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.network.PacketListener;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.function.Supplier;
@@ -24,12 +24,12 @@ public class UpdateStorePacket {
         this.button = button;
     }
 
-    public UpdateStorePacket(final PacketBuffer packetBuffer){
+    public UpdateStorePacket(final FriendlyByteBuf packetBuffer){
         this.metalIndex = packetBuffer.readInt();
         this.button = packetBuffer.readInt();
     }
 
-    public void encode(final PacketBuffer packetBuffer){
+    public void encode(final FriendlyByteBuf packetBuffer){
         packetBuffer.writeInt(metalIndex);
         packetBuffer.writeInt(button);
     }
@@ -38,11 +38,11 @@ public class UpdateStorePacket {
         ctx.get().enqueueWork(()->{
 
             NetworkEvent.Context context = ctx.get();
-            INetHandler handler = context.getNetworkManager().getNetHandler();
+            PacketListener handler = context.getNetworkManager().getPacketListener();
 
-            if (handler instanceof ServerPlayNetHandler){
+            if (handler instanceof ServerGamePacketListenerImpl){
                 Metal metal = Metal.getMetal(packet.metalIndex);
-                ServerPlayerEntity player = ((ServerPlayNetHandler) handler).player;
+                ServerPlayer player = ((ServerGamePacketListenerImpl) handler).player;
                 ItemStack itemStack = FeruchemyUtils.getMetalMindStack(player);
                 if (itemStack != null){
                     if (packet.button == 0 && FeruchemyUtils.canPlayerTap(player, itemStack, metal)){

@@ -5,13 +5,13 @@ import com.example.feruchemy.items.MetalMind;
 import com.example.feruchemy.utils.FeruchemyUtils;
 import com.legobmw99.allomancy.api.enums.Metal;
 import com.legobmw99.allomancy.modules.powers.PowersConfig;
-import com.mojang.blaze3d.matrix.MatrixStack;
-import net.minecraft.client.MainWindow;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.platform.Window;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.player.ClientPlayerEntity;
-import net.minecraft.client.renderer.texture.Texture;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.gui.ForgeIngameGui;
 import org.lwjgl.opengl.GL11;
 
@@ -35,8 +35,8 @@ public class MetalOverlay {
      */
     public static void drawMetalOverlay() {
         Minecraft mc = Minecraft.getInstance();
-        ClientPlayerEntity player = mc.player;
-        MainWindow res = mc.getMainWindow();
+        LocalPlayer player = mc.player;
+        Window res = mc.getWindow();
 
         if (!player.isAlive()) {
             return;
@@ -52,16 +52,16 @@ public class MetalOverlay {
         // Set the offsets of the overlay based on config
         switch (PowersConfig.overlay_position.get()) {
             case TOP_RIGHT:
-                renderX = res.getScaledWidth() - 145;
+                renderX = res.getGuiScaledWidth() - 145;
                 renderY = 10;
                 break;
             case BOTTOM_RIGHT:
-                renderX = res.getScaledWidth() - 145;
-                renderY = res.getScaledHeight() - 50;
+                renderX = res.getGuiScaledWidth() - 145;
+                renderY = res.getGuiScaledHeight() - 50;
                 break;
             case BOTTOM_LEFT:
                 renderX = 5;
-                renderY = res.getScaledHeight() - 50;
+                renderY = res.getGuiScaledHeight() - 50;
                 break;
             default: // TOP_LEFT
                 renderX = 5;
@@ -70,10 +70,10 @@ public class MetalOverlay {
         }
 
         ForgeIngameGui gui = new ForgeIngameGui(mc);
-        mc.getTextureManager().bindTexture(meterLoc);
-        Texture obj;
+        mc.getTextureManager().bind(meterLoc);
+        AbstractTexture obj;
         obj = mc.getTextureManager().getTexture(meterLoc);
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D, obj.getGlTextureId());
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, obj.getId());
 
 
         /*
@@ -115,7 +115,7 @@ public class MetalOverlay {
 
     private static void blit(int x, int y, float uOffset, float vOffset, int uWidth, int vHeight) {
         ForgeIngameGui gui = new ForgeIngameGui(Minecraft.getInstance());
-        ForgeIngameGui.blit(new MatrixStack(), x, y, gui.getBlitOffset(), uOffset, vOffset, uWidth, vHeight, 128, 128);
+        ForgeIngameGui.blit(new PoseStack(), x, y, gui.getBlitOffset(), uOffset, vOffset, uWidth, vHeight, 128, 128);
     }
 
 

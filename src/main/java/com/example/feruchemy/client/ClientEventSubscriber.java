@@ -4,9 +4,9 @@ import com.example.feruchemy.Feruchemy;
 import com.legobmw99.allomancy.modules.powers.PowersConfig;
 import com.legobmw99.allomancy.modules.powers.client.gui.MetalSelectScreen;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screen.ChatScreen;
-import net.minecraft.client.settings.KeyBinding;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.client.gui.screens.ChatScreen;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.InputEvent;
@@ -19,17 +19,17 @@ import net.minecraftforge.fml.common.Mod;
 public class ClientEventSubscriber {
     private final Minecraft mc = Minecraft.getInstance();
     private boolean isScreenOn=false;
-    public static KeyBinding storingMenu;
+    public static KeyMapping storingMenu;
 
     @SubscribeEvent
     public void onKeyInput(InputEvent.KeyInputEvent event) {
-        if (storingMenu.isPressed()) {
-            PlayerEntity player = this.mc.player;
-            if (this.mc.currentScreen == null) {
-                if (player == null || !this.mc.isGameFocused()) {
+        if (storingMenu.consumeClick()) {
+            Player player = this.mc.player;
+            if (this.mc.screen == null) {
+                if (player == null || !this.mc.isWindowActive()) {
                     return;
                 }
-                this.mc.displayGuiScreen(new MetalStoreScreen());
+                this.mc.setScreen(new MetalStoreScreen());
             }
         }
     }
@@ -38,16 +38,16 @@ public class ClientEventSubscriber {
     @SubscribeEvent
     public void onRenderGameOverlay(RenderGameOverlayEvent event) {
 
-        if (!PowersConfig.enable_overlay.get() && !(this.mc.currentScreen instanceof MetalSelectScreen)) {
+        if (!PowersConfig.enable_overlay.get() && !(this.mc.screen instanceof MetalSelectScreen)) {
             return;
         }
         if (event.isCancelable() || event.getType() != RenderGameOverlayEvent.ElementType.EXPERIENCE) {
             return;
         }
-        if (!this.mc.isGameFocused() || !this.mc.player.isAlive()) {
+        if (!this.mc.isWindowActive() || !this.mc.player.isAlive()) {
             return;
         }
-        if (this.mc.currentScreen != null && !(this.mc.currentScreen instanceof ChatScreen) && !(this.mc.currentScreen instanceof MetalSelectScreen)) {
+        if (this.mc.screen != null && !(this.mc.screen instanceof ChatScreen) && !(this.mc.screen instanceof MetalSelectScreen)) {
             return;
         }
 

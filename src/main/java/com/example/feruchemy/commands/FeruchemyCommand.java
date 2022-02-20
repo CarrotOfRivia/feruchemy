@@ -5,14 +5,14 @@ import com.legobmw99.allomancy.api.enums.Metal;
 import com.legobmw99.allomancy.modules.powers.command.AllomancyPowerType;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.Commands;
-import net.minecraft.command.arguments.EntityArgument;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.EntityArgument;
 
 public class FeruchemyCommand {
-    public static void register(CommandDispatcher<CommandSource> dispatcher){
-        LiteralArgumentBuilder<CommandSource> feruchemyCommand = Commands.literal("feruchemy")
-                .requires(player -> player.hasPermissionLevel(2));
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher){
+        LiteralArgumentBuilder<CommandSourceStack> feruchemyCommand = Commands.literal("feruchemy")
+                .requires(player -> player.hasPermission(2));
 
         feruchemyCommand
                 .then(Commands.argument("player", EntityArgument.player()).then(Commands.literal("become").then(Commands.literal("Feruchemist").executes(

@@ -2,16 +2,16 @@ package com.example.feruchemy.caps;
 
 import com.example.feruchemy.config.Config;
 import com.legobmw99.allomancy.api.enums.Metal;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.INBT;
-import net.minecraft.util.Direction;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.CapabilityManager;
@@ -23,7 +23,7 @@ import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Random;
 
-public class FeruchemyCapability implements ICapabilitySerializable<CompoundNBT> {
+public class FeruchemyCapability implements ICapabilitySerializable<CompoundTag> {
     @CapabilityInject(FeruchemyCapability.class)
     public static final Capability<FeruchemyCapability> FERUCHEMY_CAP = null;
     public static final ResourceLocation IDENTIFIER = new ResourceLocation("feruchemy", "feruchemy_data");
@@ -60,9 +60,9 @@ public class FeruchemyCapability implements ICapabilitySerializable<CompoundNBT>
         CapabilityManager.INSTANCE.register(FeruchemyCapability.class, new FeruchemyCapability.Storage(), () -> null);
     }
 
-    public void setDeathLoc(BlockPos pos, RegistryKey<World> dim) {
+    public void setDeathLoc(BlockPos pos, ResourceKey<Level> dim) {
         if (dim != null) {
-            this.setDeathLoc(pos, dim.getLocation().toString());
+            this.setDeathLoc(pos, dim.location().toString());
         }
     }
 
@@ -75,12 +75,12 @@ public class FeruchemyCapability implements ICapabilitySerializable<CompoundNBT>
         return this.death_pos;
     }
 
-    public RegistryKey<World> getDeathDim() {
-        return this.death_dimension == null ? null : RegistryKey.getOrCreateKey(Registry.WORLD_KEY, new ResourceLocation(this.death_dimension));
+    public ResourceKey<Level> getDeathDim() {
+        return this.death_dimension == null ? null : ResourceKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(this.death_dimension));
     }
 
-    public void setSpawnLoc(BlockPos pos, RegistryKey<World> dim) {
-        this.setSpawnLoc(pos, dim.getLocation().toString());
+    public void setSpawnLoc(BlockPos pos, ResourceKey<Level> dim) {
+        this.setSpawnLoc(pos, dim.location().toString());
     }
 
     public void setSpawnLoc(BlockPos pos, String dim_name) {
@@ -108,8 +108,8 @@ public class FeruchemyCapability implements ICapabilitySerializable<CompoundNBT>
         isStepAssist = stepAssist;
     }
 
-    public RegistryKey<World> getSpawnDim() {
-        return this.spawn_dimension == null ? null : RegistryKey.getOrCreateKey(Registry.WORLD_KEY, new ResourceLocation(this.spawn_dimension));
+    public ResourceKey<Level> getSpawnDim() {
+        return this.spawn_dimension == null ? null : ResourceKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(this.spawn_dimension));
     }
 
     public void storeExp(int amount){
@@ -137,16 +137,16 @@ public class FeruchemyCapability implements ICapabilitySerializable<CompoundNBT>
     }
 
     @Override
-    public CompoundNBT serializeNBT() {
-        CompoundNBT feruchemy_data = new CompoundNBT();
+    public CompoundTag serializeNBT() {
+        CompoundTag feruchemy_data = new CompoundTag();
 
-        CompoundNBT abilities = new CompoundNBT();
+        CompoundTag abilities = new CompoundTag();
         for (Metal mt : Metal.values()) {
             abilities.putBoolean(mt.getName(), this.hasPower(mt));
         }
         feruchemy_data.put("abilities", abilities);
 
-        CompoundNBT position = new CompoundNBT();
+        CompoundTag position = new CompoundTag();
         if (this.death_pos != null) {
             position.putString("death_dimension", this.death_dimension);
             position.putInt("death_x", this.death_pos.getX());
@@ -179,29 +179,29 @@ public class FeruchemyCapability implements ICapabilitySerializable<CompoundNBT>
         this.feruchemy_powers[metal.getIndex()] = false;
     }
 
-    public static void addPower(Metal metal, PlayerEntity player){
+    public static void addPower(Metal metal, Player player){
         FeruchemyCapability capability = FeruchemyCapability.forPlayer(player);
         capability.addPower(metal);
     }
 
-    public static void addAll(PlayerEntity player){
+    public static void addAll(Player player){
         FeruchemyCapability capability = FeruchemyCapability.forPlayer(player);
         Arrays.fill(capability.feruchemy_powers, true);
     }
 
-    public static void revokeAll(PlayerEntity player){
+    public static void revokeAll(Player player){
         FeruchemyCapability capability = FeruchemyCapability.forPlayer(player);
         Arrays.fill(capability.feruchemy_powers, false);
     }
 
-    public static void revokePower(Metal metal, PlayerEntity player){
+    public static void revokePower(Metal metal, Player player){
         FeruchemyCapability capability = FeruchemyCapability.forPlayer(player);
         capability.revokePower(metal);
     }
 
     @Override
-    public void deserializeNBT(CompoundNBT feruchemy_data) {
-        CompoundNBT abilities = (CompoundNBT) feruchemy_data.get("abilities");
+    public void deserializeNBT(CompoundTag feruchemy_data) {
+        CompoundTag abilities = (CompoundTag) feruchemy_data.get("abilities");
         for (Metal mt : Metal.values()) {
             if (abilities.getBoolean(mt.getName())) {
                 this.addPower(mt);
@@ -210,7 +210,7 @@ public class FeruchemyCapability implements ICapabilitySerializable<CompoundNBT>
             }
         }
 
-        CompoundNBT position = (CompoundNBT)feruchemy_data.get("position");
+        CompoundTag position = (CompoundTag)feruchemy_data.get("position");
         assert position != null;
         if (position.contains("death_dimension")) {
             this.setDeathLoc(new BlockPos(position.getInt("death_x"), position.getInt("death_y"), position.getInt("death_z")), position.getString("death_dimension"));
@@ -235,7 +235,7 @@ public class FeruchemyCapability implements ICapabilitySerializable<CompoundNBT>
         return true;
     }
 
-    public static boolean canPlayerUse(PlayerEntity playerEntity, Metal metal){
+    public static boolean canPlayerUse(Player playerEntity, Metal metal){
         if(Config.SERVER_RESTRICT.get() && (metal==Metal.ZINC || metal==Metal.BRONZE)){
             return false;
         }
@@ -248,14 +248,14 @@ public class FeruchemyCapability implements ICapabilitySerializable<CompoundNBT>
         }
 
         @Override
-        public INBT writeNBT(Capability<FeruchemyCapability> capability, FeruchemyCapability instance, Direction side) {
+        public Tag writeNBT(Capability<FeruchemyCapability> capability, FeruchemyCapability instance, Direction side) {
             return instance.serializeNBT();
         }
 
         @Override
-        public void readNBT(Capability<FeruchemyCapability> capability, FeruchemyCapability instance, Direction side, INBT nbt) {
-            if (nbt instanceof CompoundNBT) {
-                instance.deserializeNBT((CompoundNBT)nbt);
+        public void readNBT(Capability<FeruchemyCapability> capability, FeruchemyCapability instance, Direction side, Tag nbt) {
+            if (nbt instanceof CompoundTag) {
+                instance.deserializeNBT((CompoundTag)nbt);
             }
 
         }
