@@ -10,7 +10,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.network.PacketListener;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
 

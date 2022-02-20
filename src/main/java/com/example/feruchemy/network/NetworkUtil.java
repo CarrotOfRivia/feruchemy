@@ -2,7 +2,7 @@ package com.example.feruchemy.network;
 
 import com.example.feruchemy.caps.FeruchemyCapability;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.fml.network.PacketDistributor;
+import net.minecraftforge.network.PacketDistributor;
 
 public class NetworkUtil {
 

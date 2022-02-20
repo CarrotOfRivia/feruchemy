@@ -41,7 +41,7 @@ public class ClientEventSubscriber {
         if (!PowersConfig.enable_overlay.get() && !(this.mc.screen instanceof MetalSelectScreen)) {
             return;
         }
-        if (event.isCancelable() || event.getType() != RenderGameOverlayEvent.ElementType.EXPERIENCE) {
+        if (event.isCancelable() || event.getType() != RenderGameOverlayEvent.ElementType.LAYER) {
             return;
         }
         if (!this.mc.isWindowActive() || !this.mc.player.isAlive()) {

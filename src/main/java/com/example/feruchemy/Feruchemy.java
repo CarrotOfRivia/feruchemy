@@ -10,29 +10,26 @@ import com.example.feruchemy.events.ServerEventHandler;
 import com.example.feruchemy.items.ItemRegister;
 import com.example.feruchemy.network.PacketRegister;
 import com.example.feruchemy.utils.ExternalMods;
-import net.minecraft.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraftforge.client.ClientRegistry;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.InterModComms;
 import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
 import net.minecraftforge.fml.event.lifecycle.InterModProcessEvent;
-import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.tools.picocli.CommandLine;
 import org.lwjgl.glfw.GLFW;
 import top.theillusivec4.curios.api.SlotTypeMessage;
 
@@ -85,8 +82,6 @@ public class Feruchemy
     }
 
     private void doClientStuff(final FMLClientSetupEvent event) {
-        // do something that can only be done on the client
-        LOGGER.info("Got game settings {}", event.getMinecraftSupplier().get().options);
 
         MinecraftForge.EVENT_BUS.register(new ClientEventSubscriber());
         ClientEventSubscriber.storingMenu = new KeyMapping("key."+MOD_ID+".storing_menu", GLFW.GLFW_KEY_N, "key."+MOD_ID);
@@ -108,7 +103,7 @@ public class Feruchemy
     }
     // You can use SubscribeEvent and let the Event Bus discover methods to call
     @SubscribeEvent
-    public void onServerStarting(FMLServerStartingEvent event) {
+    public void onServerStarting(ServerStartingEvent event) {
         // do something when the server starts
         LOGGER.info("HELLO from server starting");
         MinecraftForge.EVENT_BUS.register(new ServerEventHandler());

@@ -57,7 +57,7 @@ public class FeruchemyUtils {
         }
 
         for(int i=0; i<9; i++){
-            ItemStack stack = player.inventory.getItem(i);
+            ItemStack stack = player.getInventory().getItem(i);
             if(stack.getItem() instanceof MetalMind){
                 return stack;
             }

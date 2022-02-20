@@ -40,8 +40,8 @@ import net.minecraftforge.event.entity.player.SleepingTimeCheckEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.registries.RegistryObject;
 
 import java.util.Map;
 
@@ -78,7 +78,7 @@ public class ServerEventHandler {
             MobEffectInstance effect1 = player.getEffect(EffectRegister.KNOCK_BACK.get());
             if(effect1 != null && event.getTarget() instanceof LivingEntity){
                 int level = effect1.getAmplifier()+1;
-                ((LivingEntity)event.getTarget()).knockback(level * 0.5F, (double) Mth.sin(player.yRot * ((float)Math.PI / 180F)), (double)(-Mth.cos(player.yRot * ((float)Math.PI / 180F))));
+                ((LivingEntity)event.getTarget()).knockback(level * 0.5F, (double) Mth.sin(player.getYRot() * ((float)Math.PI / 180F)), (double)(-Mth.cos(player.getYRot() * ((float)Math.PI / 180F))));
             }
         }
     }
@@ -174,7 +174,7 @@ public class ServerEventHandler {
                     byte randomMisting = getRandMisting();
                     cap.addPower(Metal.getMetal(randomMisting));
                     ItemStack flakes = new ItemStack((ItemLike)((RegistryObject) MaterialsSetup.FLAKES.get(randomMisting)).get());
-                    if (!player.inventory.add(flakes)) {
+                    if (!player.getInventory().add(flakes)) {
                         ItemEntity entity = new ItemEntity(player.getCommandSenderWorld(), player.position().x(), player.position().y(), player.position().z(), flakes);
                         player.getCommandSenderWorld().addFreshEntity(entity);
                     }

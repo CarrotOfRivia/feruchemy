@@ -70,7 +70,7 @@ public class MetalOverlay {
         }
 
         ForgeIngameGui gui = new ForgeIngameGui(mc);
-        mc.getTextureManager().bind(meterLoc);
+        mc.getTextureManager().bindForSetup(meterLoc);
         AbstractTexture obj;
         obj = mc.getTextureManager().getTexture(meterLoc);
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, obj.getId());

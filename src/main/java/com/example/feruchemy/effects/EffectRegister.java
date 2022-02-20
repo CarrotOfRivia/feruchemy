@@ -3,12 +3,12 @@ package com.example.feruchemy.effects;
 import com.example.feruchemy.Feruchemy;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
-import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
 
 public class EffectRegister {
-    public static final DeferredRegister<MobEffect> EFFECT = DeferredRegister.create(ForgeRegistries.POTIONS, Feruchemy.MOD_ID);
+    public static final DeferredRegister<MobEffect> EFFECT = DeferredRegister.create(ForgeRegistries.MOB_EFFECTS, Feruchemy.MOD_ID);
 
     public static final RegistryObject<MyEffect> FIRE_ASPECT = EFFECT.register("fire_aspect", ()->new MyEffect(MobEffectCategory.BENEFICIAL, 0));
     public static final RegistryObject<MyEffect> KNOCK_BACK = EFFECT.register("knock_back", ()->new MyEffect(MobEffectCategory.BENEFICIAL, 0));
