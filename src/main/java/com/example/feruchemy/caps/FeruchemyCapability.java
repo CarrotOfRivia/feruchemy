@@ -14,6 +14,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityManager;
+import net.minecraftforge.common.capabilities.CapabilityToken;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 import net.minecraftforge.common.util.LazyOptional;
 
@@ -23,8 +24,8 @@ import java.util.Arrays;
 import java.util.Random;
 
 public class FeruchemyCapability implements ICapabilitySerializable<CompoundTag> {
-    @CapabilityInject(FeruchemyCapability.class)
-    public static final Capability<FeruchemyCapability> FERUCHEMY_CAP = null;
+    public static final Capability<FeruchemyCapability> FERUCHEMY_CAP = CapabilityManager.get(new CapabilityToken<>() {
+    });
     public static final ResourceLocation IDENTIFIER = new ResourceLocation("feruchemy", "feruchemy_data");
     private static final int[] MAX_BURN_TIME = new int[]{1800, 1800, 3600, 600, 1800, 1800, 2400, 1600, 100, 20, 300, 40, 1000, 10000, 3600, 160};
     private final LazyOptional<FeruchemyCapability> handler = LazyOptional.of(() -> {
@@ -53,10 +54,6 @@ public class FeruchemyCapability implements ICapabilitySerializable<CompoundTag>
         return (FeruchemyCapability)player.getCapability(FERUCHEMY_CAP).orElseThrow(() -> {
             return new RuntimeException("Capability not attached!");
         });
-    }
-
-    public static void register() {
-        CapabilityManager.INSTANCE.register(FeruchemyCapability.class, new FeruchemyCapability.Storage(), () -> null);
     }
 
     public void setDeathLoc(BlockPos pos, ResourceKey<Level> dim) {
@@ -240,23 +237,5 @@ public class FeruchemyCapability implements ICapabilitySerializable<CompoundTag>
         }
         FeruchemyCapability capability = FeruchemyCapability.forPlayer(playerEntity);
         return capability.hasPower(metal);
-    }
-
-    public static class Storage implements Capability.IStorage<FeruchemyCapability> {
-        public Storage() {
-        }
-
-        @Override
-        public Tag writeNBT(Capability<FeruchemyCapability> capability, FeruchemyCapability instance, Direction side) {
-            return instance.serializeNBT();
-        }
-
-        @Override
-        public void readNBT(Capability<FeruchemyCapability> capability, FeruchemyCapability instance, Direction side, Tag nbt) {
-            if (nbt instanceof CompoundTag) {
-                instance.deserializeNBT((CompoundTag)nbt);
-            }
-
-        }
     }
 }

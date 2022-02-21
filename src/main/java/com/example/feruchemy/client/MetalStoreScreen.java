@@ -14,15 +14,13 @@ import com.legobmw99.allomancy.api.enums.Metal;
 import com.legobmw99.allomancy.modules.powers.PowersConfig;
 import com.legobmw99.allomancy.modules.powers.data.AllomancerCapability;
 import com.legobmw99.allomancy.modules.powers.data.DefaultAllomancerData;
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.*;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.gui.screens.Screen;
-import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.platform.Lighting;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -77,8 +75,8 @@ public class MetalStoreScreen extends Screen {
         RenderSystem.disableCull();
         RenderSystem.disableTexture();
         RenderSystem.enableBlend();
-        RenderSystem.shadeModel(7424);
-        buf.begin(6, DefaultVertexFormat.POSITION_COLOR);
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        buf.begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
 
         int seg;
         Metal mt;
@@ -166,7 +164,6 @@ public class MetalStoreScreen extends Screen {
         }
 
         tess.end();
-        RenderSystem.shadeModel(7424);
         RenderSystem.enableTexture();
 
         for(seg = 0; seg < segments; ++seg) {
@@ -182,7 +179,7 @@ public class MetalStoreScreen extends Screen {
             float xsp = xp - 4.0F;
             float ysp = yp;
             String name = (mouseInSector ? ChatFormatting.UNDERLINE : ChatFormatting.RESET) + (new TranslatableComponent(METAL_LOCAL[toMetalIndex(seg)])).getString();
-            int width = this.mc.getEntityRenderDispatcher().getFont().width(name);
+            int width = this.mc.font.width(name);
             if (xsp < (float)x) {
                 xsp -= (float)(width - 8);
             }
@@ -191,18 +188,18 @@ public class MetalStoreScreen extends Screen {
                 ysp = yp - 9.0F;
             }
 
-            this.mc.getEntityRenderDispatcher().getFont().drawShadow(matrixStack, name, xsp, ysp, 16777215);
+            this.mc.font.drawShadow(matrixStack, name, xsp, ysp, 16777215);
             double mod = 0.8D;
             int xdp = (int)((double)(xp - (float)x) * mod + (double)x);
             int ydp = (int)((double)(yp - (float)y) * mod + (double)y);
-            this.mc.getEntityRenderDispatcher().textureManager.bind(METAL_ICONS[toMetalIndex(seg)]);
-            RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+            RenderSystem.setShader(GameRenderer::getPositionTexShader);
+            RenderSystem.setShaderTexture(0, METAL_ICONS[toMetalIndex(seg)]);
             blit(matrixStack, xdp - 8, ydp - 8, 0.0F, 0.0F, 16, 16, 16, 16);
         }
 
         FeruchemyCapability capability = FeruchemyCapability.forPlayer(this.mc.player);
-        this.mc.getEntityRenderDispatcher().getFont().draw(matrixStack, "FID: "+MetalMind.toDigit(capability.getFid(), 4), this.width / 2.0f-30, this.height*0.1f, 0xFC0317);
-        this.mc.getEntityRenderDispatcher().getFont().draw(matrixStack, "Stored exp: "+MetalMind.toDigit(capability.getStoredExp(), 4), this.width / 2.0f-36, this.height*0.1f+9, 0x056E2D);
+        this.mc.font.draw(matrixStack, "FID: "+MetalMind.toDigit(capability.getFid(), 4), this.width / 2.0f-30, this.height*0.1f, 0xFC0317);
+        this.mc.font.draw(matrixStack, "Stored exp: "+MetalMind.toDigit(capability.getStoredExp(), 4), this.width / 2.0f-36, this.height*0.1f+9, 0x056E2D);
 
 //        StringBuilder watermarkBuilder = new StringBuilder();
 //        for (int i=0; i<9; i++){
@@ -210,13 +207,9 @@ public class MetalStoreScreen extends Screen {
 //        }
 //        this.mc.getRenderManager().getFontRenderer().drawString(matrixStack, watermarkBuilder.toString(), 0, this.height/2, 0X11C8D9);
 
-        RenderSystem.enableRescaleNormal();
         RenderSystem.enableBlend();
         RenderSystem.blendFuncSeparate(770, 771, 1, 0);
-        Lighting.turnBackOn();
-        Lighting.turnOff();
         RenderSystem.disableBlend();
-        RenderSystem.disableRescaleNormal();
     }
 
     @Override
