@@ -51,7 +51,7 @@ public class ClientEventSubscriber {
             return;
         }
 
-        MetalOverlay.drawMetalOverlay();
+        MetalOverlay.drawMetalOverlay(event.getMatrixStack());
     }
 
 }

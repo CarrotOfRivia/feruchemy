@@ -77,7 +77,6 @@ public class Feruchemy
         LOGGER.info("DIRT BLOCK >> {}", Blocks.DIRT.getRegistryName());
 
         PacketRegister.register();
-        FeruchemyCapability.register();
 
     }
 

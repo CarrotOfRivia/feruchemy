@@ -15,8 +15,7 @@ public class NetworkUtil {
     }
 
     public static void sync(Player player) {
-        FeruchemyCapability cap = FeruchemyCapability.forPlayer(player);
-        sync(cap, player);
+        player.getCapability(FeruchemyCapability.FERUCHEMY_CAP).ifPresent(feruchemyCapability -> {sync(feruchemyCapability, player);});
     }
 
     public static void sync(FeruchemyCapability cap, Player player) {

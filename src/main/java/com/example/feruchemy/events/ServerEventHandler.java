@@ -30,6 +30,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.util.Mth;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingHealEvent;
@@ -132,11 +133,17 @@ public class ServerEventHandler {
     }
 
     @SubscribeEvent
+    public void registerCaps(RegisterCapabilitiesEvent event) {
+        event.register(FeruchemyCapability.class);
+    }
+
+    @SubscribeEvent
     public void onPlayerClone(PlayerEvent.Clone event) {
         if (!event.getPlayer().level.isClientSide()) {
             Player player = event.getPlayer();
             FeruchemyCapability cap = FeruchemyCapability.forPlayer(player);
             Player oldPlayer = event.getOriginal();
+            oldPlayer.reviveCaps();
             oldPlayer.getCapability(FeruchemyCapability.FERUCHEMY_CAP).ifPresent((oldCap) -> {
                 cap.setDeathLoc(oldCap.getDeathLoc(), oldCap.getDeathDim());
                 Metal[] metals;
@@ -161,6 +168,7 @@ public class ServerEventHandler {
 
             });
             Network.sync(player);
+            oldPlayer.invalidateCaps();
         }
     }
 
