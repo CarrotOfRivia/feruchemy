@@ -45,6 +45,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.RegistryObject;
 
 import java.util.Map;
+import java.util.Random;
 
 @Mod.EventBusSubscriber(modid = Feruchemy.MOD_ID, value = Dist.DEDICATED_SERVER)
 public class ServerEventHandler {
@@ -179,7 +180,12 @@ public class ServerEventHandler {
             FeruchemyCapability cap = FeruchemyCapability.forPlayer(player);
             if (cap.isUninvested()) {
                 if(Config.STARTING_POWER.get()==0){
-                    byte randomMisting = getRandMisting();
+                    byte randomMisting;
+                    if (Config.RESPECT_UUID.get()) {
+                        randomMisting = getUUIDFerring(player);
+                    } else {
+                        randomMisting = getRandFerring();
+                    }
                     cap.addPower(Metal.getMetal(randomMisting));
                     ItemStack flakes = new ItemStack((ItemLike)((RegistryObject) MaterialsSetup.FLAKES.get(randomMisting)).get());
                     if (!player.getInventory().add(flakes)) {
@@ -221,8 +227,28 @@ public class ServerEventHandler {
         }
     }
 
+    private byte getUUIDFerring(Player player) {
+        byte randomMisting;
+        Metal metal;
+        Random random = new Random();
+        random.setSeed(player.getUUID().hashCode());
+        //random.setSeed(player.hashCode());
+        while (true) {
+            randomMisting = (byte) random.nextInt(Metal.values().length);
+            metal = Metal.getMetal(randomMisting);
+            if(Config.SERVER_RESTRICT.get() && (metal!=Metal.ZINC) && (metal!=Metal.BRONZE)){
+                break;
+            } else {
+                random.setSeed(randomMisting);
+            }
+            if(!Config.SERVER_RESTRICT.get()){
+                break;
+            }
+        }
+        return randomMisting;
+    }
 
-    private byte getRandMisting(){
+    private byte getRandFerring(){
         Metal metal;
         byte randomMisting;
         while (true){

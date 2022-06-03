@@ -14,6 +14,7 @@ public class Config {
     public static final ForgeConfigSpec.IntValue TAPPING_START_COST;
 
     public static final ForgeConfigSpec.BooleanValue SERVER_RESTRICT;
+    public static final ForgeConfigSpec.BooleanValue RESPECT_UUID;
 
     static {
         ForgeConfigSpec.Builder CONFIG_BUILDER = new ForgeConfigSpec.Builder();
@@ -32,6 +33,8 @@ public class Config {
         STARTING_POWER = CONFIG_BUILDER.comment("1: all feruchemy; 0: random").defineInRange("starting_power", 0, 0, 1);
 
         SERVER_RESTRICT = CONFIG_BUILDER.comment("Restrict access to zinc/bronze Feruchemy").define("server_restrict", false);
+
+        RESPECT_UUID = CONFIG_BUILDER.comment("if true makes powers consistent across worlds based off of uuid").define("respect_uuid", false);
 
         TAPPING_START_COST = CONFIG_BUILDER.comment("start cost of tapping").defineInRange("tapping_start_cost", 1, 0, 9999999);
 
