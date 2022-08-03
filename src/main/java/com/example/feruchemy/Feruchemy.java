@@ -1,6 +1,5 @@
 package com.example.feruchemy;
 
-import com.example.feruchemy.caps.FeruchemyCapability;
 import com.example.feruchemy.client.ClientEventSubscriber;
 import com.example.feruchemy.commands.FeruchemyCommand;
 import com.example.feruchemy.config.Config;
@@ -18,6 +17,7 @@ import net.minecraftforge.client.ClientRegistry;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.InterModComms;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -26,14 +26,12 @@ import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
-import net.minecraftforge.fml.event.lifecycle.InterModProcessEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFW;
 import top.theillusivec4.curios.api.SlotTypeMessage;
-
-import java.util.stream.Collectors;
 
 // The value here should match an entry in the META-INF/mods.toml file
 @Mod(Feruchemy.MOD_ID)
@@ -45,28 +43,26 @@ public class Feruchemy
 
     public static final CreativeModeTab ITEM_GROUP = new CreativeModeTab("feruchemy") {
         @Override
-        public ItemStack makeIcon() {
+        public @NotNull ItemStack makeIcon() {
             return new ItemStack(ItemRegister.METAL_MIND.get());
         }
     };
 
     public Feruchemy() {
+        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         // Register the setup method for modloading
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
-        // Register the enqueueIMC method for modloading
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::enqueueIMC);
-        // Register the processIMC method for modloading
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::processIMC);
+        modEventBus.addListener(this::setup);
         // Register the doClientStuff method for modloading
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::doClientStuff);
+        modEventBus.addListener(this::doClientStuff);
+        modEventBus.addListener(this::onModCommunicate);
 
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.COMMON);
 
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
 
-        ItemRegister.ITEMS.register(FMLJavaModLoadingContext.get().getModEventBus());
-        EffectRegister.EFFECT.register(FMLJavaModLoadingContext.get().getModEventBus());
+        ItemRegister.ITEMS.register(modEventBus);
+        EffectRegister.EFFECT.register(modEventBus);
 
     }
 
@@ -87,19 +83,6 @@ public class Feruchemy
         ClientRegistry.registerKeyBinding(ClientEventSubscriber.storingMenu);
     }
 
-    private void enqueueIMC(final InterModEnqueueEvent event)
-    {
-        // some example code to dispatch IMC to another mod
-        InterModComms.sendTo("examplemod", "helloworld", () -> { LOGGER.info("Hello world from the MDK"); return "Hello world";});
-    }
-
-    private void processIMC(final InterModProcessEvent event)
-    {
-        // some example code to receive and process InterModComms from other mods
-        LOGGER.info("Got IMC {}", event.getIMCStream().
-                map(m->m.getMessageSupplier().get()).
-                collect(Collectors.toList()));
-    }
     // You can use SubscribeEvent and let the Event Bus discover methods to call
     @SubscribeEvent
     public void onServerStarting(ServerStartingEvent event) {
@@ -109,8 +92,7 @@ public class Feruchemy
         MinecraftForge.EVENT_BUS.register(new CommonEventHandler());
     }
 
-    @SubscribeEvent
-    public void onModCommunicate(final InterModEnqueueEvent event){
+    private void onModCommunicate(final InterModEnqueueEvent event){
         if(ExternalMods.CURIOS.isLoaded()){
             InterModComms.sendTo("curios", SlotTypeMessage.REGISTER_TYPE, () -> new SlotTypeMessage.Builder("metal_mind").size(1).build());
         }

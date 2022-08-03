@@ -8,5 +8,7 @@
   "effect.feruchemy.non_generation": "Damaged",
 
   "key.feruchemy": "Feruchemy",
-  "key.feruchemy.storing_menu": "Feruchemy Menu"
+  "key.feruchemy.storing_menu": "Feruchemy Menu",
+  "itemGroup.feruchemy": "Feruchemy",
+  "curios.identifier.metal_mind": "Metalmind"
 }
