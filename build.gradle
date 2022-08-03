@@ -49,6 +49,8 @@ minecraft {
                     source sourceSets.main
                 }
             }
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${buildDir}/createSrgToMcp/output.srg"
         }
 
         server {
@@ -65,6 +67,8 @@ minecraft {
                     source sourceSets.main
                 }
             }
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${buildDir}/createSrgToMcp/output.srg"
         }
 
         data {
