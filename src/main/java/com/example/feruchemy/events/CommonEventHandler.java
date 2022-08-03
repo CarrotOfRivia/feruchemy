@@ -14,10 +14,7 @@ public class CommonEventHandler {
 
     @SubscribeEvent
     public void onPlayerTick(TickEvent.PlayerTickEvent event){
-        if(! event.player.level.isClientSide()){
-
-        }
-        else {
+        if(event.player.level.isClientSide()){
             Player player = event.player;
             FeruStatus steelStatus = FeruchemyUtils.getStatus(player, Metal.STEEL);
             if((steelStatus.tappingStatus > 1) && player.maxUpStep<1.0f){

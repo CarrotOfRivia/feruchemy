@@ -20,24 +20,23 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.ChatFormatting;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class MetalMind extends Item {
     // I must be drunk to write this...
-    public static final List<String> NON_METAL_KEYS = Arrays.asList("fid");
+    public static final List<String> NON_METAL_KEYS = List.of("fid");
 
     public static final int CD = 20;
     public static final int MAX_SHAVE_COUNT = 64;
-    private static Random random = new Random();
+    private static final Random random = new Random();
     private boolean isInf = false;
 
     private static final List<String> validMetalStrings = Stream.of(Metal.values())
-            .map(Enum::name)
-            .collect(Collectors.toList());
+            .map(Enum::name).toList();
 
     public MetalMind() {
         super(new Item.Properties().tab(Feruchemy.ITEM_GROUP).stacksTo(1));
@@ -48,7 +47,7 @@ public class MetalMind extends Item {
     }
 
     @Override
-    public InteractionResultHolder<ItemStack> use(Level worldIn, Player playerIn, InteractionHand handIn) {
+    public @NotNull InteractionResultHolder<ItemStack> use(Level worldIn, @NotNull Player playerIn, @NotNull InteractionHand handIn) {
         if(!worldIn.isClientSide()){
             ItemStack flakes = playerIn.getOffhandItem();
             ItemStack metalMind = playerIn.getMainHandItem();
@@ -259,7 +258,7 @@ public class MetalMind extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable Level worldIn, List<Component> tooltip, TooltipFlag flagIn) {
+    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level worldIn, @NotNull List<Component> tooltip, @NotNull TooltipFlag flagIn) {
         super.appendHoverText(stack, worldIn, tooltip, flagIn);
         if(isInf()){
             tooltip.add(new TextComponent("This Band holds an Insane amount of Investiture").withStyle(ChatFormatting.GOLD));
@@ -331,7 +330,7 @@ public class MetalMind extends Item {
     }
 
     @Override
-    public void inventoryTick(ItemStack stack, Level worldIn, Entity entityIn, int itemSlot, boolean isSelected) {
+    public void inventoryTick(@NotNull ItemStack stack, @NotNull Level worldIn, @NotNull Entity entityIn, int itemSlot, boolean isSelected) {
         if(getFlakeCount(stack, Metal.BRONZE) == 0 && stack.getItem() instanceof MetalMind && ((MetalMind) stack.getItem()).isInf()){
             for(Metal metal: Metal.values()){
                 setStatus(stack, Status.NULL, metal);
